@@ -14,7 +14,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-//#include <stdbool.h>
+#include <stdbool.h>
 
 #define TAM_TEXTO 256
 #define TAM_HISTORICO 100
@@ -43,9 +43,9 @@ typedef struct { //TAD Editor é uma estrutura do tipo nó descritor para realiz
 // === Funções ===
 //Parâmetro de saída void, apenas manipula o endereço de memória do TAD Editor, não necessário haver um retorno
 void inicializarEditor(Editor *e) { //Parâmetro de entrada é o endereço de um TAD Editor que foi alocado no programa principal, inicializa os ponteiros como
-    e->inicio = NULL				//NULL para indicar que a estrutura está vazia.
-e->fim = NULL
-e->cursor = NULL
+    e->inicio = NULL;				//NULL para indicar que a estrutura está vazia.
+e->fim = NULL;
+e->cursor = NULL;
 e->copia = NULL;
     e->totalLinhas = 0;
     e->hist.topo = e->hist.atual = -1; //Indice do histórico, como a lista está vazia (Não há elementos nó Linha inserido) usa-se -1
@@ -138,21 +138,20 @@ void moverBaixo(Editor *e) { //Parâmetro de entrada a estrutura Editor alocada 
     if (e->cursor && e->cursor->prox) e->cursor = e->cursor->prox; //O ponteiro cursor recebe o nó Linha seguinte (posterior) à ele na lista
 }
 
-void mostrarConteudo(Editor *e) {
+void mostrarConteudo(Editor *e) { //Parâmetro de entrada é o endereço de memória de uma estrutura Editor que foi alocado no programa principal
     Linha *aux = e->inicio;
     int i = 1;
     while (aux) {
-        printf("%02d: %s%s\n", i++, aux->texto, (aux == e->cursor ? " <==" : ""));
-        aux = aux->prox;
+        printf("%02d: %s%s\n", i++, aux->texto, (aux == e->cursor ? " <==" : "")); //Imprime o conteúdo do campo texto de cada nó Linha, utiliza um ternário para inserir um "<==" caso o nó percorrido no laço
+        aux = aux->prox;                                                           //Seja o mesmo nó que está guardado no ponteiro cursor, para indicar a posição do cursor no editor
     }
 }
 
-void buscarPalavra(Editor *e, const char *palavra) {
-    Linha *aux = e->inicio;
-    int i = 1, achou = 0;
+void buscarPalavra(Editor *e, const char *palavra) { //Parâmetros de entrada é uma estrutura Editor que foi alocada no programa principal e um ponteiro char que armazena o endereço de um vetor de caracteres (string)
+    Linha *aux = e->inicio; //Inicializa um nó Linha auxiliar para percorrer a lista
+    int i = 1, achou = 0;   //Define a variavel "i" como sendo um contador para indicar a posição da linha e uma variavel flag "achou" para verificar se houve ocorrência da palavra
     while (aux) {
-        if (strstr(aux->texto, palavra)) {
-            printf("%02d: %s\n", i, aux->texto);
+        if (strstr(aux->texto, palavra)) { //A função strstr() utiliza como parâmetro duas strings, a primeira é a string que será verificada e a segunda é a string que será procurada como sendo uma substring da primeira            printf("%02d: %s\n", i, aux->texto);
             achou = 1;
         }
         aux = aux->prox;
@@ -241,13 +240,13 @@ void menu() {
 
 int main() {
     Editor ed;
-    //inicializarEditor(&ed);
+    inicializarEditor(&ed);
     int op;
     char entrada[TAM_TEXTO], alvo[TAM_TEXTO], novo[TAM_TEXTO], nome[100];
 
     do {
         menu();
-        scanf("%d", &op); //getchar();
+        scanf("%d", &op); getchar();
 
         switch (op) {
             case 1:
