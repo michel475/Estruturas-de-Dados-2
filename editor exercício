@@ -89,8 +89,8 @@ void restaurarEstado(Editor *e, int indice) { //Parâmetros de entrada é o ende
     e->cursor = e->fim;
     e->hist.atual = indice;
 }
-
-void inserirLinha(Editor *e, const char *texto) {
+//A função inserirLinha() tem como parâmetro de entrada o endereço de uma estrutura Editor, passado por parâmetro do programa principal e realiza alocação do nó Linha
+void inserirLinha(Editor *e, const char *texto) { //Após fazer a alocação da memória do novo nó, copia o conteúdo da string passada por parâmetro para dentro do nó alocado
     Linha *nova = (Linha*)malloc(sizeof(Linha));
     strncpy(nova->texto, texto, TAM_TEXTO);
     nova->ant = nova->prox = NULL;
@@ -111,7 +111,7 @@ void inserirLinha(Editor *e, const char *texto) {
     salvarEstado(e);
 }
 
-void removerLinhaAtual(Editor *e) {
+void removerLinhaAtual(Editor *e) { //A função removerLinhaAtual() remove a linha da estrutura Editor realizando a troca de ponteiros e liberação da memória do endereço armazenado no ponteiro cursor, utilizando um ponteiro auxiliar "remover" para o free()
     if (!e->cursor) return;
     Linha *remover = e->cursor;
     if (remover->ant) remover->ant->prox = remover->prox;
@@ -123,7 +123,7 @@ void removerLinhaAtual(Editor *e) {
     e->totalLinhas--;
     salvarEstado(e);
 }
-
+//A função editarLinhaAtual() permite que edite o conteúdo no campo texto da linha atual (cursor)
 void editarLinhaAtual(Editor *e, const char *texto) { //Parâmetro de entrada, o endereço de uma estrutura Editor que foi alocado no programa principal
     if (!e->cursor) return;							  //Se cursor for NULL interrompe a execução da função, caso contrário, copia o conteúdo do char texto passado por parâmetro 
     strncpy(e->cursor->texto, texto, TAM_TEXTO);
@@ -146,7 +146,7 @@ void mostrarConteudo(Editor *e) { //Parâmetro de entrada é o endereço de mem�
         aux = aux->prox;                                                           //Seja o mesmo nó que está guardado no ponteiro cursor, para indicar a posição do cursor no editor
     }
 }
-
+//Função buscarPalavra() busca uma substring dentro da string maior que representa a linha da estrutura Editor
 void buscarPalavra(Editor *e, const char *palavra) { //Parâmetros de entrada é uma estrutura Editor que foi alocada no programa principal e um ponteiro char que armazena o endereço de um vetor de caracteres (string)
     Linha *aux = e->inicio; //Inicializa um nó Linha auxiliar para percorrer a lista
     int i = 1, achou = 0;   //Define a variavel "i" como sendo um contador para indicar a posição da linha e uma variavel flag "achou" para verificar se houve ocorrência da palavra
@@ -177,31 +177,31 @@ void substituirPalavra(Editor *e, const char *alvo, const char *novo) {
     printf("Substituição concluída.\n");
 }
 
-void copiarLinha(Editor *e) {
-    if (!e->cursor) return;
-    if (!e->copia) e->copia = (Linha*)malloc(sizeof(Linha));
-    strcpy(e->copia->texto, e->cursor->texto);
+void copiarLinha(Editor *e) { //Parâmetro de entrada é a estrutura Editor alocada no programa principal
+    if (!e->cursor) return; //Caso o ponteiro cursor seja NULL, interrompe a execução da função
+    if (!e->copia) e->copia = (Linha*)malloc(sizeof(Linha)); //Caso o ponteiro copia seja NULL então realiza a alocação da memória do ponteiro
+    strcpy(e->copia->texto, e->cursor->texto); //Copia o conteúdo do nó armazenado no ponteiro cursor para o ponteiro copia
     printf("Linha copiada.\n");
 }
-void colarLinhaApos(Editor *e) {
+void colarLinhaApos(Editor *e) {    //A função colarLinhaApos() insere uma nova linha abaixo do nó onde está o ponteiro cursor com o conteúdo do ponteiro copia
     if (!e->copia) return;
     inserirLinha(e, e->copia->texto);
     printf("Linha colada.\n");
 }
 
-void salvarArquivo(Editor *e, const char *nome) {
-    FILE *fp = fopen(nome, "w");
-    if (!fp) return;
+void salvarArquivo(Editor *e, const char *nome) { //Função salvarArquivo(), recebe como parâmetro de entrada a estrutura Editor alocada do programa principal e uma string nome
+    FILE *fp = fopen(nome, "w"); //Realiza abertura de um arquivo no modo escrita w- (write)
+    if (!fp) return;    //Caso tenha sido criado/aberto com sucesso o arquivo utiliza um laço while() para percorrer a estrutura Editor e inserir cada nó alocado dentro da estrutura dentro do arquivo
     Linha *aux = e->inicio;
     while (aux) {
-        fprintf(fp, "%s\n", aux->texto);
+        fprintf(fp, "%s\n", aux->texto); //Grava no arquivo o conteúdo do nó percorrido
         aux = aux->prox;
     }
-    fclose(fp);
+    fclose(fp); //Fecha o arquivo para que não ocorra erro
     printf("Arquivo salvo.\n");
 }
 
-void carregarArquivo(Editor *e, const char *nome) {
+void carregarArquivo(Editor *e, const char *nome) { //Função carregarArquivo(), recebe como parâmetro a estrutura Editor alocada do programa principal e 
     FILE *fp = fopen(nome, "r");
     if (!fp) return;
     char linha[TAM_TEXTO];
