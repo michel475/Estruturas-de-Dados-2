@@ -87,7 +87,7 @@ void restaurarEstado(Editor *e, int indice) { //Parâmetros de entrada é o ende
         linha = strtok(NULL, "\n"); //Passa para o próximo token dentro da string
     }
     e->cursor = e->fim;
-    e->hist.atual = indice;
+    e->hist.atual = indice; //Atualiza o índice da versão atual da lista dentro do historico
 }
 //A função inserirLinha() tem como parâmetro de entrada o endereço de uma estrutura Editor, passado por parâmetro do programa principal e realiza alocação do nó Linha
 void inserirLinha(Editor *e, const char *texto) { //Após fazer a alocação da memória do novo nó, copia o conteúdo da string passada por parâmetro para dentro do nó alocado
@@ -159,21 +159,21 @@ void buscarPalavra(Editor *e, const char *palavra) { //Parâmetros de entrada é
     }
     if (!achou) printf("Palavra não encontrada.\n");
 }
-
-void substituirPalavra(Editor *e, const char *alvo, const char *novo) {
+//Parâmetro de saída void, não possui retorno
+void substituirPalavra(Editor *e, const char *alvo, const char *novo) { //A função substituirPalavra() procura uma palavra alvo dentro da lista e substitui todas as ocorrências desta palavra pela palavra armazenada na string novo
     Linha *aux = e->inicio;
     char buffer[TAM_TEXTO * 2];
     while (aux) {
         char *pos;
         while ((pos = strstr(aux->texto, alvo))) {
-            strcpy(buffer, pos + strlen(alvo));
-            *pos = '\0';
-            strcat(aux->texto, novo);
-            strcat(aux->texto, buffer);
+            strcpy(buffer, pos + strlen(alvo)); //Pega a posição dentro da string em que finaliza a palavra alvo, e copia para dentro da string buffer para realizar a concatenação com o resto do conteúdo após a palavra
+            *pos = '\0'; //Encerra a string a partir do endereço da ocorrência da palavra alvo
+            strcat(aux->texto, novo); //Concatena a nova palavra no lugar da palavra alvo
+            strcat(aux->texto, buffer); //Concatena o restante do conteúdo no nó Linha
         }
         aux = aux->prox;
     }
-    salvarEstado(e);
+    salvarEstado(e); //Chama a função salvarEstado para inserir a versão com a nova palavra na estrutura Historico hist
     printf("Substituição concluída.\n");
 }
 
@@ -201,24 +201,24 @@ void salvarArquivo(Editor *e, const char *nome) { //Função salvarArquivo(), re
     printf("Arquivo salvo.\n");
 }
 
-void carregarArquivo(Editor *e, const char *nome) { //Função carregarArquivo(), recebe como parâmetro a estrutura Editor alocada do programa principal e 
+void carregarArquivo(Editor *e, const char *nome) { //Função carregarArquivo(), recebe como parâmetro a estrutura Editor alocada do programa principal
     FILE *fp = fopen(nome, "r");
     if (!fp) return;
     char linha[TAM_TEXTO];
-    while (fgets(linha, TAM_TEXTO, fp)) {
-        linha[strcspn(linha, "\n")] = 0;
-        inserirLinha(e, linha);
+    while (fgets(linha, TAM_TEXTO, fp)) { //Resgata a linha do arquivo
+        linha[strcspn(linha, "\n")] = 0; //Remove o "\n" da string
+        inserirLinha(e, linha); //Chama a função inserirLinha para realizar a alocação da memória e "materializar" a lista
     }
     fclose(fp);
     printf("Arquivo carregado.\n");
 }
 
-void desfazer(Editor *e) {
-    if (e->hist.atual > 0) restaurarEstado(e, e->hist.atual - 1);
+void desfazer(Editor *e) { //Parâmetro de entrada: Estrutura TAD do Editor que foi alocado no programa principal
+    if (e->hist.atual > 0) restaurarEstado(e, e->hist.atual - 1); //A função desfazer() chama a função restaurarEstado() passando como parâmetro o editor, e o índice do histórico atual -1 para pegar a versão anterior da lista
     else printf("Nada para desfazer.\n");
 }
 
-void refazer(Editor *e) {
+void refazer(Editor *e) { //A função refazer() funciona de maneira semelhante da função desfazer, no entanto, ao invés de resgatar a versão anterior da lista, ela resgata a versão posterior a atual, visando restaurar uma ação que foi feita
     if (e->hist.atual < e->hist.topo) restaurarEstado(e, e->hist.atual + 1);
     else printf("Nada para refazer.\n");
 }
