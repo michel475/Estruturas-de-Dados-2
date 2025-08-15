@@ -249,14 +249,14 @@ void carregarArquivo(Editor *e, const char *nome_arquivo) { //Função carregarA
 
 void desfazer(Editor *e) { //Parâmetro de entrada: Estrutura TAD do Editor que foi alocado no programa principal
     if (e->hist.atual > 0) 
-		restaurarEstado(e, e->hist.atual - 1); //A função desfazer() chama a função restaurarEstado() passando como parâmetro o editor, e o índice do histórico atual -1 para pegar a versão anterior da lista
+		restaurarEditor(e, e->hist.atual - 1); //A função desfazer() chama a função restaurarEstado() passando como parâmetro o editor, e o índice do histórico atual -1 para pegar a versão anterior da lista
     else 
 		printf("Nada para desfazer.\n");
 }
 
 void refazer(Editor *e) { //A função refazer() funciona de maneira semelhante da função desfazer, no entanto, ao invés de resgatar a versão anterior da lista, ela resgata a versão posterior a atual, visando restaurar uma ação que foi feita
     if (e->hist.atual < e->hist.topo) 
-		restaurarEstado(e, e->hist.atual + 1);
+		restaurarEditor(e, e->hist.atual + 1);
     else 
 		printf("Nada para refazer.\n");
 }
@@ -319,10 +319,10 @@ int main() {
                 buscarPalavra(&ed, palavra_alvo); 
 				break;
             case 8:
-                printf("Palavra alvo: "); 
+                printf("Alvo: "); 
 				fgets(palavra_alvo, TAM_TEXTO, stdin);
-                palavra_alvo[strcspn(alvo, "\n")] = 0;
-                printf("Nova palavra: "); 
+                palavra_alvo[strcspn(palavra_alvo, "\n")] = 0;
+                printf("Novo: "); 
 				fgets(palavra_substituir, TAM_TEXTO, stdin);	
                 palavra_substituir[strcspn(palavra_substituir, "\n")] = 0;
                 substituirPalavra(&ed, palavra_alvo, palavra_substituir); 
