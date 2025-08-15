@@ -44,35 +44,39 @@ typedef struct { //TAD Editor é uma estrutura do tipo nó descritor para realiz
 //Parâmetro de saída void, apenas manipula o endereço de memória do TAD Editor, não necessário haver um retorno
 void inicializarEditor(Editor *e) { //Parâmetro de entrada é o endereço de um TAD Editor que foi alocado no programa principal, inicializa os ponteiros como
     e->inicio = NULL;				//NULL para indicar que a estrutura está vazia.
-e->fim = NULL;
-e->cursor = NULL;
-e->copia = NULL;
+	e->fim = NULL;
+	e->cursor = NULL;
+	e->copia = NULL;
     e->totalLinhas = 0;
-    e->hist.topo = e->hist.atual = -1; //Indice do histórico, como a lista está vazia (Não há elementos nó Linha inserido) usa-se -1
+    e->hist.topo = -1;
+	e->hist.atual = -1; //Indice do histórico, como a lista está vazia (Não há elementos nó Linha inserido) usa-se -1
 }
 
-void salvarEstado(Editor *e) { //Parâmetro de saída void, não possui retorno, parâmetro de entrada é um ponteiro que recebe o endereço de um TAD editor
+void salvarEditor(Editor *e) { //Parâmetro de saída void, não possui retorno, parâmetro de entrada é um ponteiro que recebe o endereço de um TAD editor
     if (e->hist.topo < TAM_HISTORICO - 1)
-e->hist.topo++;
+		e->hist.topo++;
     e->hist.atual = e->hist.topo;
     Linha *aux = e->inicio; //Uma linha auxiliar recebe o nó inicial da lista atual manipulada
     char *dest = e->hist.conteudo[e->hist.atual]; //Este amigo aqui é um ponteiro que reebe o endereço da versão atual dentro da estrutura Historico
     dest[0] = '\0';
-    while (aux) {
+    while (aux!=NULL) {
         strcat(dest, aux->texto); //Concatena o texto de cada nó da lista que está em memória no ponteiro de char que aponta para o atual do Historico, concatenando assim o conteúdo da lista atual em memória dentro do Historico
         strcat(dest, "\n");
         aux = aux->prox;
     }
 }
 
-void restaurarEstado(Editor *e, int indice) { //Parâmetros de entrada é o endereço de memória de um TAD Editor alocado no programa principal e um inteiro indice
-    if (indice < 0 || indice > e->hist.topo) return;
-    while (e->inicio) { //Laço while() repete o bloco de execução até e->inicio ser NULL, utiliza um nó Linha auxiliar para liberar a memória
+void restaurarEditor(Editor *e, int indice) { //Parâmetros de entrada é o endereço de memória de um TAD Editor alocado no programa principal e um inteiro indice
+    if (indice < 0 || indice > e->hist.topo) 
+		return;
+    while (e->inicio!=NULL) { //Laço while() repete o bloco de execução até e->inicio ser NULL, utiliza um nó Linha auxiliar para liberar a memória
         Linha *tmp = e->inicio;
         e->inicio = e->inicio->prox;
         free(tmp);
     }
-    e->inicio = e->fim = e->cursor = NULL; //Inicializa os ponteiros do TAD editor para indicar que está vazio
+    e->inicio = NULL;
+	e->fim = NULL;
+	e->cursor = NULL; //Inicializa os ponteiros do TAD editor para indicar que está vazio
     e->totalLinhas = 0;
 
     char *linha = strtok(e->hist.conteudo[indice], "\n"); //A função strtok() separa a string passada como parâmetro em tokens que são caracteres iguais ao segundo parâmetro
@@ -81,8 +85,10 @@ void restaurarEstado(Editor *e, int indice) { //Parâmetros de entrada é o ende
         strncpy(nova->texto, linha, TAM_TEXTO); //Copia o conteúdo no tamanho de cada nó Linha contido no indice do historico
         nova->ant = e->fim; //Faz o ponteiro do anterior do novo nó alocado, apontar para o atual fim
         nova->prox = NULL; //Será inserido no final, então o próximo é NULL
-        if (e->fim) e->fim->prox = nova;
-        else e->inicio = nova;
+        if (e->fim!=NULL) 
+			e->fim->prox = nova;
+        else 
+			e->inicio = nova;
         e->fim = nova;
         linha = strtok(NULL, "\n"); //Passa para o próximo token dentro da string
     }
@@ -93,107 +99,134 @@ void restaurarEstado(Editor *e, int indice) { //Parâmetros de entrada é o ende
 void inserirLinha(Editor *e, const char *texto) { //Após fazer a alocação da memória do novo nó, copia o conteúdo da string passada por parâmetro para dentro do nó alocado
     Linha *nova = (Linha*)malloc(sizeof(Linha));
     strncpy(nova->texto, texto, TAM_TEXTO);
-    nova->ant = nova->prox = NULL;
+    nova->ant = NULL;
+	nova->prox = NULL;
 
-    if (!e->inicio) {
-        e->inicio = e->fim = e->cursor = nova;
+    if (e->inicio == NULL) {
+        e->inicio = nova;
+		e->fim = nova;
+		e->cursor = nova;
     } else {
         nova->ant = e->cursor;
-        nova->prox = e->cursor ? e->cursor->prox : NULL;
-        if (e->cursor) {
-            if (e->cursor->prox) e->cursor->prox->ant = nova;
+        if(e->cursor!=NULL)
+        	nova->prox = e->cursor->prox;
+        else
+        	nova->prox = NULL;
+        if (e->cursor!=NULL) {
+            if (e->cursor->prox!=NULL) 
+				e->cursor->prox->ant = nova;
             e->cursor->prox = nova;
-            if (e->cursor == e->fim) e->fim = nova;
+            if (e->cursor == e->fim) 
+				e->fim = nova;
         }
         e->cursor = nova;
     }
     e->totalLinhas++;
-    salvarEstado(e);
+    salvarEditor(e);
 }
 
 void removerLinhaAtual(Editor *e) { //A função removerLinhaAtual() remove a linha da estrutura Editor realizando a troca de ponteiros e liberação da memória do endereço armazenado no ponteiro cursor, utilizando um ponteiro auxiliar "remover" para o free()
-    if (!e->cursor) return;
+    if (e->cursor==NULL) return;
     Linha *remover = e->cursor;
-    if (remover->ant) remover->ant->prox = remover->prox;
-    else e->inicio = remover->prox;
-    if (remover->prox) remover->prox->ant = remover->ant;
-    else e->fim = remover->ant;
-    e->cursor = remover->prox ? remover->prox : remover->ant;
+    if (remover->ant!=NULL) 
+		remover->ant->prox = remover->prox;
+    else 
+		e->inicio = remover->prox;
+    if (remover->prox!=NULL) 
+		remover->prox->ant = remover->ant;
+    else 
+		e->fim = remover->ant;
+	if(remover->prox!=NULL)
+		e->cursor = remover->prox;
+	else
+		e->cursor = remover->ant;
     free(remover);
     e->totalLinhas--;
-    salvarEstado(e);
+    salvarEditor(e);
 }
 //A função editarLinhaAtual() permite que edite o conteúdo no campo texto da linha atual (cursor)
 void editarLinhaAtual(Editor *e, const char *texto) { //Parâmetro de entrada, o endereço de uma estrutura Editor que foi alocado no programa principal
-    if (!e->cursor) return;							  //Se cursor for NULL interrompe a execução da função, caso contrário, copia o conteúdo do char texto passado por parâmetro 
+    if (e->cursor==NULL) //Se cursor for NULL interrompe a execução da função, caso contrário, copia o conteúdo do char texto passado por parâmetro 
+		return;
     strncpy(e->cursor->texto, texto, TAM_TEXTO);
-    salvarEstado(e);
+    salvarEditor(e);
 }
 
 void moverCima(Editor *e) { //Parâmetro de entrada a estrutura Editor alocada no programa principal
-    if (e->cursor && e->cursor->ant) e->cursor = e->cursor->ant; //O ponteiro cursor recebe o nó Linha anterior à ele na lista
+    if (e->cursor!=NULL && e->cursor->ant!=NULL) 
+		e->cursor = e->cursor->ant; //O ponteiro cursor recebe o nó Linha anterior à ele na lista
 }
 
 void moverBaixo(Editor *e) { //Parâmetro de entrada a estrutura Editor alocada no programa principal
-    if (e->cursor && e->cursor->prox) e->cursor = e->cursor->prox; //O ponteiro cursor recebe o nó Linha seguinte (posterior) à ele na lista
+    if (e->cursor!=NULL && e->cursor->prox!=NULL) 
+		e->cursor = e->cursor->prox; //O ponteiro cursor recebe o nó Linha seguinte (posterior) à ele na lista
 }
 
 void mostrarConteudo(Editor *e) { //Parâmetro de entrada é o endereço de memória de uma estrutura Editor que foi alocado no programa principal
     Linha *aux = e->inicio;
     int i = 1;
-    while (aux) {
-        printf("%02d: %s%s\n", i++, aux->texto, (aux == e->cursor ? " <==" : "")); //Imprime o conteúdo do campo texto de cada nó Linha, utiliza um ternário para inserir um "<==" caso o nó percorrido no laço
-        aux = aux->prox;                                                           //Seja o mesmo nó que está guardado no ponteiro cursor, para indicar a posição do cursor no editor
+    while (aux!=NULL) {
+        printf("%02d: %s", i++, aux->texto); //Imprime o conteúdo do campo texto de cada nó Linha, utiliza um ternário para inserir um "<==" caso o nó percorrido no laço
+        if(aux == e->cursor)
+        	printf(" <==\n");
+        else
+        	printf("\n");
+		aux = aux->prox;                                                           //Seja o mesmo nó que está guardado no ponteiro cursor, para indicar a posição do cursor no editor
     }
 }
 //Função buscarPalavra() busca uma substring dentro da string maior que representa a linha da estrutura Editor
-void buscarPalavra(Editor *e, const char *palavra) { //Parâmetros de entrada é uma estrutura Editor que foi alocada no programa principal e um ponteiro char que armazena o endereço de um vetor de caracteres (string)
+void buscarPalavra(Editor *e, const char *palavra_alvo) { //Parâmetros de entrada é uma estrutura Editor que foi alocada no programa principal e um ponteiro char que armazena o endereço de um vetor de caracteres (string)
     Linha *aux = e->inicio; //Inicializa um nó Linha auxiliar para percorrer a lista
     int i = 1, achou = 0;   //Define a variavel "i" como sendo um contador para indicar a posição da linha e uma variavel flag "achou" para verificar se houve ocorrência da palavra
-    while (aux) {
-        if (strstr(aux->texto, palavra)) { //A função strstr() utiliza como parâmetro duas strings, a primeira é a string que será verificada e a segunda é a string que será procurada como sendo uma substring da primeira            printf("%02d: %s\n", i, aux->texto);
+    while (aux!=NULL) {
+        if (strstr(aux->texto, palavra_alvo)) { //A função strstr() utiliza como parâmetro duas strings, a primeira é a string que será verificada e a segunda é a string que será procurada como sendo uma substring da primeira            printf("%02d: %s\n", i, aux->texto);
             achou = 1;
         }
         aux = aux->prox;
         i++;
     }
-    if (!achou) printf("Palavra não encontrada.\n");
+    if (achou==0) 
+		printf("Palavra não encontrada.\n");
 }
 //Parâmetro de saída void, não possui retorno
-void substituirPalavra(Editor *e, const char *alvo, const char *novo) { //A função substituirPalavra() procura uma palavra alvo dentro da lista e substitui todas as ocorrências desta palavra pela palavra armazenada na string novo
+void substituirPalavra(Editor *e, const char *palavra_alvo, const char *palavra_substituir) { //A função substituirPalavra() procura uma palavra alvo dentro da lista e substitui todas as ocorrências desta palavra pela palavra armazenada na string novo
     Linha *aux = e->inicio;
     char buffer[TAM_TEXTO * 2];
-    while (aux) {
+    while (aux!=NULL) {
         char *pos;
-        while ((pos = strstr(aux->texto, alvo))) {
-            strcpy(buffer, pos + strlen(alvo)); //Pega a posição dentro da string em que finaliza a palavra alvo, e copia para dentro da string buffer para realizar a concatenação com o resto do conteúdo após a palavra
+        while ((pos = strstr(aux->texto, palavra_alvo))) {
+            strcpy(buffer, pos + strlen(palavra_alvo)); //Pega a posição dentro da string em que finaliza a palavra alvo, e copia para dentro da string buffer para realizar a concatenação com o resto do conteúdo após a palavra
             *pos = '\0'; //Encerra a string a partir do endereço da ocorrência da palavra alvo
-            strcat(aux->texto, novo); //Concatena a nova palavra no lugar da palavra alvo
+            strcat(aux->texto, palavra_substituir); //Concatena a nova palavra no lugar da palavra alvo
             strcat(aux->texto, buffer); //Concatena o restante do conteúdo no nó Linha
         }
         aux = aux->prox;
     }
-    salvarEstado(e); //Chama a função salvarEstado para inserir a versão com a nova palavra na estrutura Historico hist
+    salvarEditor(e); //Chama a função salvarEstado para inserir a versão com a nova palavra na estrutura Historico hist
     printf("Substituição concluída.\n");
 }
 
 void copiarLinha(Editor *e) { //Parâmetro de entrada é a estrutura Editor alocada no programa principal
-    if (!e->cursor) return; //Caso o ponteiro cursor seja NULL, interrompe a execução da função
-    if (!e->copia) e->copia = (Linha*)malloc(sizeof(Linha)); //Caso o ponteiro copia seja NULL então realiza a alocação da memória do ponteiro
+    if (e->cursor==NULL) //Caso o ponteiro cursor seja NULL, interrompe a execução da função
+		return;
+    if (e->copia==NULL) 
+		e->copia = (Linha*)malloc(sizeof(Linha)); //Caso o ponteiro copia seja NULL então realiza a alocação da memória do ponteiro
     strcpy(e->copia->texto, e->cursor->texto); //Copia o conteúdo do nó armazenado no ponteiro cursor para o ponteiro copia
     printf("Linha copiada.\n");
 }
 void colarLinhaApos(Editor *e) {    //A função colarLinhaApos() insere uma nova linha abaixo do nó onde está o ponteiro cursor com o conteúdo do ponteiro copia
-    if (!e->copia) return;
+    if (e->copia==NULL) 
+		return;
     inserirLinha(e, e->copia->texto);
     printf("Linha colada.\n");
 }
 
-void salvarArquivo(Editor *e, const char *nome) { //Função salvarArquivo(), recebe como parâmetro de entrada a estrutura Editor alocada do programa principal e uma string nome
-    FILE *fp = fopen(nome, "w"); //Realiza abertura de um arquivo no modo escrita w- (write)
-    if (!fp) return;    //Caso tenha sido criado/aberto com sucesso o arquivo utiliza um laço while() para percorrer a estrutura Editor e inserir cada nó alocado dentro da estrutura dentro do arquivo
+void salvarArquivo(Editor *e, const char *nome_arquivo) { //Função salvarArquivo(), recebe como parâmetro de entrada a estrutura Editor alocada do programa principal e uma string nome, que representa o nome do arquivo que será aberto
+    FILE *fp = fopen(nome_arquivo, "w"); //Realiza abertura de um arquivo no modo escrita w- (write)
+    if (fp == NULL) 
+		return;    //Caso tenha sido criado/aberto com sucesso o arquivo utiliza um laço while() para percorrer a estrutura Editor e inserir cada nó alocado dentro da estrutura dentro do arquivo
     Linha *aux = e->inicio;
-    while (aux) {
+    while (aux!=NULL) {
         fprintf(fp, "%s\n", aux->texto); //Grava no arquivo o conteúdo do nó percorrido
         aux = aux->prox;
     }
@@ -201,9 +234,10 @@ void salvarArquivo(Editor *e, const char *nome) { //Função salvarArquivo(), re
     printf("Arquivo salvo.\n");
 }
 
-void carregarArquivo(Editor *e, const char *nome) { //Função carregarArquivo(), recebe como parâmetro a estrutura Editor alocada do programa principal
-    FILE *fp = fopen(nome, "r");
-    if (!fp) return;
+void carregarArquivo(Editor *e, const char *nome_arquivo) { //Função carregarArquivo(), recebe como parâmetro a estrutura Editor alocada do programa principal
+    FILE *fp = fopen(nome_arquivo, "r");
+    if (fp==NULL) 
+		return;
     char linha[TAM_TEXTO];
     while (fgets(linha, TAM_TEXTO, fp)) { //Resgata a linha do arquivo
         linha[strcspn(linha, "\n")] = 0; //Remove o "\n" da string
@@ -214,18 +248,22 @@ void carregarArquivo(Editor *e, const char *nome) { //Função carregarArquivo()
 }
 
 void desfazer(Editor *e) { //Parâmetro de entrada: Estrutura TAD do Editor que foi alocado no programa principal
-    if (e->hist.atual > 0) restaurarEstado(e, e->hist.atual - 1); //A função desfazer() chama a função restaurarEstado() passando como parâmetro o editor, e o índice do histórico atual -1 para pegar a versão anterior da lista
-    else printf("Nada para desfazer.\n");
+    if (e->hist.atual > 0) 
+		restaurarEstado(e, e->hist.atual - 1); //A função desfazer() chama a função restaurarEstado() passando como parâmetro o editor, e o índice do histórico atual -1 para pegar a versão anterior da lista
+    else 
+		printf("Nada para desfazer.\n");
 }
 
 void refazer(Editor *e) { //A função refazer() funciona de maneira semelhante da função desfazer, no entanto, ao invés de resgatar a versão anterior da lista, ela resgata a versão posterior a atual, visando restaurar uma ação que foi feita
-    if (e->hist.atual < e->hist.topo) restaurarEstado(e, e->hist.atual + 1);
-    else printf("Nada para refazer.\n");
+    if (e->hist.atual < e->hist.topo) 
+		restaurarEstado(e, e->hist.atual + 1);
+    else 
+		printf("Nada para refazer.\n");
 }
 
 // === Menu ===
 
-void menu() {
+void menu() { //Função menu(), usada para imprimir o menu de opções de manipulação na tela.
     printf("\n=== MENU ===\n");
     printf("1. Inserir linha\n2. Remover linha\n3. Editar linha\n");
     printf("4. Subir\n5. Descer\n6. Mostrar conteúdo\n");
@@ -239,49 +277,78 @@ void menu() {
 // === Principal ===
 
 int main() {
-    Editor ed;
-    inicializarEditor(&ed);
+    Editor ed; //Declaração do TAD Editor ed
+    inicializarEditor(&ed); //Inicialização do editor
     int op;
-    char entrada[TAM_TEXTO], alvo[TAM_TEXTO], novo[TAM_TEXTO], nome[100];
+    char entrada[TAM_TEXTO], palavra_alvo[TAM_TEXTO], palavra_substituir[TAM_TEXTO], nome_arquivo[100]; //Variáveis de entrada, palavra alvo e palavra de substituicao
 
     do {
         menu();
-        scanf("%d", &op); getchar();
+        scanf("%d", &op); 
+		getchar();
 
         switch (op) {
-            case 1:
-                printf("Texto: "); fgets(entrada, TAM_TEXTO, stdin);
+            case 1: //Realiza a chamada da função inserirLinha() passando como parâmetro o endereço da estrutura editor alocada e a entrada digitada pelo usuário 
+                printf("Texto: "); 
+				fgets(entrada, TAM_TEXTO, stdin);
                 entrada[strcspn(entrada, "\n")] = 0;
-                inserirLinha(&ed, entrada); break;
-            case 2:
-                removerLinhaAtual(&ed); break;
-            case 3:
-                printf("Novo texto: "); fgets(entrada, TAM_TEXTO, stdin);
+                inserirLinha(&ed, entrada); 
+				break;
+            case 2: //Chama a função removerLinhaAtual() que libera a memória do nó apontado pelo ponteiro cursor
+                removerLinhaAtual(&ed); 
+				break;
+            case 3: //Solicita um novo texto do usuário para realizar edição da linha atual com a função editarLinhaAtual()
+                printf("Novo texto: "); 
+				fgets(entrada, TAM_TEXTO, stdin);
                 entrada[strcspn(entrada, "\n")] = 0;
-                editarLinhaAtual(&ed, entrada); break;
-            case 4: moverCima(&ed); break;
-            case 5: moverBaixo(&ed); break;
-            case 6: mostrarConteudo(&ed); break;
-            case 7:
-                printf("Palavra: "); fgets(entrada, TAM_TEXTO, stdin);
-                entrada[strcspn(entrada, "\n")] = 0;
-                buscarPalavra(&ed, entrada); break;
+                editarLinhaAtual(&ed, entrada); 
+				break;
+            case 4: //Move o ponteiro cursor para a linha anterior chamando a função moverCima() passando o endereço da estrutura editor como parâmetro
+				moverCima(&ed); 
+				break;
+            case 5: //Move o ponteiro cursor para a próxima linha chamando a função moverBaixo() passando o endereço da estrutura editor como parâmetro
+				moverBaixo(&ed); 
+				break;
+            case 6: //Chama a função mostrarConteudo() passando o endereço do editor como parâmetro para impressão do texto dos nós linhas alocado no editor
+				mostrarConteudo(&ed); 
+				break;
+            case 7: //Chama a função buscarPalavra() passando o endereço do editor como parâmetro e uma string digitada pelo usuário
+                printf("Palavra: "); 
+				fgets(palavra_alvo, TAM_TEXTO, stdin);
+                palavra_alvo[strcspn(palavra_alvo, "\n")] = 0;
+                buscarPalavra(&ed, palavra_alvo); 
+				break;
             case 8:
-                printf("Alvo: "); fgets(alvo, TAM_TEXTO, stdin);
-                alvo[strcspn(alvo, "\n")] = 0;
-                printf("Novo: "); fgets(novo, TAM_TEXTO, stdin);
-                novo[strcspn(novo, "\n")] = 0;
-                substituirPalavra(&ed, alvo, novo); break;
-            case 9: copiarLinha(&ed); break;
-            case 10: colarLinhaApos(&ed); break;
+                printf("Palavra alvo: "); 
+				fgets(palavra_alvo, TAM_TEXTO, stdin);
+                palavra_alvo[strcspn(alvo, "\n")] = 0;
+                printf("Nova palavra: "); 
+				fgets(palavra_substituir, TAM_TEXTO, stdin);	
+                palavra_substituir[strcspn(palavra_substituir, "\n")] = 0;
+                substituirPalavra(&ed, palavra_alvo, palavra_substituir); 
+				break;
+            case 9: 
+				copiarLinha(&ed); 
+				break;
+            case 10: 
+				colarLinhaApos(&ed); 
+				break;
             case 11:
-                printf("Arquivo: "); scanf("%s", nome);
-                salvarArquivo(&ed, nome); break;
+                printf("Arquivo: "); 
+				scanf("%s", nome_arquivo);
+                salvarArquivo(&ed, nome_arquivo); 
+				break;
             case 12:
-                printf("Arquivo: "); scanf("%s", nome);
-                carregarArquivo(&ed, nome); break;
-            case 13: desfazer(&ed); break;
-            case 14: refazer(&ed); break;
+                printf("Arquivo: "); 
+				scanf("%s", nome_arquivo);
+                carregarArquivo(&ed, nome_arquivo); 
+				break;
+            case 13: 
+				desfazer(&ed); 
+				break;
+            case 14: 
+				refazer(&ed); 
+				break;
         }
     } while (op != 0);
 
