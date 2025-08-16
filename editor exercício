@@ -10,7 +10,6 @@
  * - Desfazer e refazer alterações
  * - Salvar e carregar conteúdo de arquivo texto
  */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -152,12 +151,12 @@ void editarLinhaAtual(Editor *e, const char *texto) { //Parâmetro de entrada, o
     salvarEditor(e);
 }
 
-void moverCima(Editor *e) { //Parâmetro de entrada a estrutura Editor alocada no programa principal
+void moverCursorCima(Editor *e) { //Parâmetro de entrada a estrutura Editor alocada no programa principal
     if (e->cursor!=NULL && e->cursor->ant!=NULL) 
 		e->cursor = e->cursor->ant; //O ponteiro cursor recebe o nó Linha anterior à ele na lista
 }
 
-void moverBaixo(Editor *e) { //Parâmetro de entrada a estrutura Editor alocada no programa principal
+void moverCursorBaixo(Editor *e) { //Parâmetro de entrada a estrutura Editor alocada no programa principal
     if (e->cursor!=NULL && e->cursor->prox!=NULL) 
 		e->cursor = e->cursor->prox; //O ponteiro cursor recebe o nó Linha seguinte (posterior) à ele na lista
 }
@@ -247,14 +246,14 @@ void carregarArquivo(Editor *e, const char *nome_arquivo) { //Função carregarA
     printf("Arquivo carregado.\n");
 }
 
-void desfazer(Editor *e) { //Parâmetro de entrada: Estrutura TAD do Editor que foi alocado no programa principal
+void desfazerAcao(Editor *e) { //Parâmetro de entrada: Estrutura TAD do Editor que foi alocado no programa principal
     if (e->hist.atual > 0) 
 		restaurarEditor(e, e->hist.atual - 1); //A função desfazer() chama a função restaurarEstado() passando como parâmetro o editor, e o índice do histórico atual -1 para pegar a versão anterior da lista
     else 
 		printf("Nada para desfazer.\n");
 }
 
-void refazer(Editor *e) { //A função refazer() funciona de maneira semelhante da função desfazer, no entanto, ao invés de resgatar a versão anterior da lista, ela resgata a versão posterior a atual, visando restaurar uma ação que foi feita
+void refazerAcao(Editor *e) { //A função refazer() funciona de maneira semelhante da função desfazer, no entanto, ao invés de resgatar a versão anterior da lista, ela resgata a versão posterior a atual, visando restaurar uma ação que foi feita
     if (e->hist.atual < e->hist.topo) 
 		restaurarEditor(e, e->hist.atual + 1);
     else 
@@ -277,8 +276,8 @@ void menu() { //Função menu(), usada para imprimir o menu de opções de manip
 // === Principal ===
 
 int main() {
-    Editor ed; //Declaração do TAD Editor ed
-    inicializarEditor(&ed); //Inicialização do editor
+    Editor *ed = (Editor*)malloc(sizeof(Editor)); //Declaração do TAD Editor ed
+    inicializarEditor(ed); //Inicialização do editor
     int op;
     char entrada[TAM_TEXTO], palavra_alvo[TAM_TEXTO], palavra_substituir[TAM_TEXTO], nome_arquivo[100]; //Variáveis de entrada, palavra alvo e palavra de substituicao
 
@@ -292,31 +291,31 @@ int main() {
                 printf("Texto: "); 
 				fgets(entrada, TAM_TEXTO, stdin);
                 entrada[strcspn(entrada, "\n")] = 0;
-                inserirLinha(&ed, entrada); 
+                inserirLinha(ed, entrada); 
 				break;
             case 2: //Chama a função removerLinhaAtual() que libera a memória do nó apontado pelo ponteiro cursor
-                removerLinhaAtual(&ed); 
+                removerLinhaAtual(ed); 
 				break;
             case 3: //Solicita um novo texto do usuário para realizar edição da linha atual com a função editarLinhaAtual()
                 printf("Novo texto: "); 
 				fgets(entrada, TAM_TEXTO, stdin);
                 entrada[strcspn(entrada, "\n")] = 0;
-                editarLinhaAtual(&ed, entrada); 
+                editarLinhaAtual(ed, entrada); 
 				break;
             case 4: //Move o ponteiro cursor para a linha anterior chamando a função moverCima() passando o endereço da estrutura editor como parâmetro
-				moverCima(&ed); 
+				moverCursorCima(ed); 
 				break;
             case 5: //Move o ponteiro cursor para a próxima linha chamando a função moverBaixo() passando o endereço da estrutura editor como parâmetro
-				moverBaixo(&ed); 
+				moverCursorBaixo(ed); 
 				break;
             case 6: //Chama a função mostrarConteudo() passando o endereço do editor como parâmetro para impressão do texto dos nós linhas alocado no editor
-				mostrarConteudo(&ed); 
+				mostrarConteudo(ed); 
 				break;
             case 7: //Chama a função buscarPalavra() passando o endereço do editor como parâmetro e uma string digitada pelo usuário
                 printf("Palavra: "); 
 				fgets(palavra_alvo, TAM_TEXTO, stdin);
                 palavra_alvo[strcspn(palavra_alvo, "\n")] = 0;
-                buscarPalavra(&ed, palavra_alvo); 
+                buscarPalavra(ed, palavra_alvo); 
 				break;
             case 8:
                 printf("Alvo: "); 
@@ -325,29 +324,29 @@ int main() {
                 printf("Novo: "); 
 				fgets(palavra_substituir, TAM_TEXTO, stdin);	
                 palavra_substituir[strcspn(palavra_substituir, "\n")] = 0;
-                substituirPalavra(&ed, palavra_alvo, palavra_substituir); 
+                substituirPalavra(ed, palavra_alvo, palavra_substituir); 
 				break;
             case 9: 
-				copiarLinha(&ed); 
+				copiarLinha(ed); 
 				break;
             case 10: 
-				colarLinhaApos(&ed); 
+				colarLinhaApos(ed); 
 				break;
             case 11:
                 printf("Arquivo: "); 
 				scanf("%s", nome_arquivo);
-                salvarArquivo(&ed, nome_arquivo); 
+                salvarArquivo(ed, nome_arquivo); 
 				break;
             case 12:
                 printf("Arquivo: "); 
 				scanf("%s", nome_arquivo);
-                carregarArquivo(&ed, nome_arquivo); 
+                carregarArquivo(ed, nome_arquivo); 
 				break;
             case 13: 
-				desfazer(&ed); 
+				desfazerAcao(ed); 
 				break;
             case 14: 
-				refazer(&ed); 
+				refazerAcao(ed); 
 				break;
         }
     } while (op != 0);
