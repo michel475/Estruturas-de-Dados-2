@@ -317,7 +317,7 @@ int main() {
                 palavra_alvo[strcspn(palavra_alvo, "\n")] = 0;
                 buscarPalavra(ed, palavra_alvo); 
 				break;
-            case 8:
+            case 8: //Chama a função substituirPalavra(), passando o editor, a palavra alvo e a palavra que irá substituir, digitadas pelo usuário, como parâmetros para a função
                 printf("Alvo: "); 
 				fgets(palavra_alvo, TAM_TEXTO, stdin);
                 palavra_alvo[strcspn(palavra_alvo, "\n")] = 0;
@@ -326,26 +326,26 @@ int main() {
                 palavra_substituir[strcspn(palavra_substituir, "\n")] = 0;
                 substituirPalavra(ed, palavra_alvo, palavra_substituir); 
 				break;
-            case 9: 
+            case 9: //Chamada da função copiarLinha()
 				copiarLinha(ed); 
 				break;
-            case 10: 
+            case 10: //Chamada da função colarLinhaApos()
 				colarLinhaApos(ed); 
 				break;
-            case 11:
+            case 11: //Solicita o nome do arquivo que o usuário quer que salve chamando a função salvarArquivo passando o editor e o nome do arquivo digitado pelo usuário
                 printf("Arquivo: "); 
 				scanf("%s", nome_arquivo);
                 salvarArquivo(ed, nome_arquivo); 
 				break;
-            case 12:
+            case 12: //Chama a função carregarArquivo() passando o editor e o nome do arquivo que deseja carregar como parâmetros
                 printf("Arquivo: "); 
 				scanf("%s", nome_arquivo);
                 carregarArquivo(ed, nome_arquivo); 
 				break;
-            case 13: 
+            case 13: //Chamada da função desfazerAcao()
 				desfazerAcao(ed); 
 				break;
-            case 14: 
+            case 14: //Chamada da função refazerAcao()
 				refazerAcao(ed); 
 				break;
         }
