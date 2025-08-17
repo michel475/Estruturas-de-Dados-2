@@ -40,6 +40,29 @@ typedef struct { //TAD Editor é uma estrutura do tipo nó descritor para realiz
 } Editor;
 
 // === Funções ===
+
+/*Análise da complexidade
+=========================
+Para as funções de: inserção, remoção e edição (inserirLinha(), removerLinhAtual() e editarLinhAtual() a complexidade é O(1)
+pois a inserção é feita apenas no final, o qual possui um ponteiro que contém o endereço do último elemento
+para a remoção, é feita apenas da linha atual, ou seja, do ponteiro cursor
+para a função de edição de linha, mesmo caso da função de remoção, é necessário apenas manipulação de alguns ponteiros, não é necessário
+percorrer a lista inteira para realizar qualquer uma dessas operações
+
+Para a função de busca (buscaPalavra()), é necessário percorrer a lista encadeada inteira partindo do ponteiro inicial
+,ou seja, sua complexidade é O(n)
+
+Funções como carregarArquivo(), é necessário percorrer todas as linhas do arquivo e alocar os nós para cada linha
+presente no arquivo, logo, sua complexidade pode ser definida como a quantidade de linhas presentes no arquivo, O(n)
+
+Função substituirPalavra(): A função realiza a substituição de uma palavra alvo por outra palavra, a complexidade do algoritmo dessa função
+depende da quantidade de ocorrências daquela palavra dentro de cada nó da estrutura editor, logo, O(n)
+
+Função copiarLinha() e colarLinhaApos(): Ambas as funções lidam apenas com a manipulação de alguns ponteiros
+a cópia da linha é feita a partir do endereço do nó que está guardado no ponteiro cursor
+já a cola da linha, refere-se ao ato de alocar um novo nó com o conteúdo do nó copiado, realiza a inserção abaixo do cursor
+logo, é necessário apenas manipular alguns ponteiros, o ponteiro do cursor e o nó posterior à ele, sua complexidade é O(1)
+para inserção da linha*/
 //Parâmetro de saída void, apenas manipula o endereço de memória do TAD Editor, não necessário haver um retorno
 void inicializarEditor(Editor *e) { //Parâmetro de entrada é o endereço de um TAD Editor que foi alocado no programa principal, inicializa os ponteiros como
     e->inicio = NULL;				//NULL para indicar que a estrutura está vazia.
