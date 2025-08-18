@@ -1,0 +1,116 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct no{
+	int dado;
+	struct no *prox, *ant;
+}No;
+
+typedef struct lista{
+	No *inicio, *fim;
+	int qtd;
+}Lista;
+
+void iniciarLista(Lista *li)
+{
+	if(li != NULL)
+	{
+		li->inicio = li->fim = NULL;
+		li->qtd = 0;
+	}
+}
+
+int inserirDir(Lista *li, int dado)
+{
+	if(li == NULL)
+		return 0;
+	No *no = (No*)malloc(sizeof(No));
+	if(no == NULL)
+		return 0;
+	no->dado = dado;
+	no->prox = no->ant = NULL;
+	if(li->inicio == NULL)
+	{
+		li->inicio = li->fim = no;
+	}
+	else{
+		li->fim->prox = no;
+		no->ant = li->fim;
+		li->fim = no;
+	}
+	
+	li->qtd+=1;
+	
+	return 1;
+}
+
+int removerOcorrencia(Lista *li, int numero)
+{
+	if(li== NULL)
+		return 0;
+	No *aux = li->inicio;
+	No *ant = NULL;
+	int flag=0;
+	while(aux != NULL)
+	{
+		if(aux->dado == numero)
+		{
+			if(aux == li->inicio)
+			{
+				while(li->inicio->dado == numero)
+				{
+					No *temp = aux;
+					li->inicio = aux->prox;
+					li->inicio->ant = NULL;
+					aux = li->inicio;
+					free(temp);
+				}
+			}
+			else{
+				if(aux == li->fim)
+				{
+					No *temp = aux;
+					li->fim = aux->ant;
+					li->fim->prox = NULL;
+					aux = li->fim;
+					free(temp);
+				}
+				else{
+					No *temp = aux;
+					ant = aux->ant;
+					aux = aux->prox;
+					ant->prox = aux;
+					aux->ant = ant;
+					free(temp);
+				}
+			}
+		}
+		aux = aux->prox;
+	}
+	
+	return 1;
+}
+
+void imprime(Lista *li)
+{
+	No *aux = li->inicio;
+	while(aux!=NULL)
+	{
+		printf("%d\n", aux->dado);
+		aux = aux->prox;
+	}
+}
+
+int main()
+{
+	Lista *li = (Lista*)malloc(sizeof(Lista));
+	iniciarLista(li);
+	inserirDir(li, 2);
+	inserirDir(li, 2);
+	inserirDir(li, 2);
+	inserirDir(li, 2);
+	inserirDir(li, 2);
+	inserirDir(li, 6);
+	removerOcorrencia(li, 2);
+	imprime(li);
+}
