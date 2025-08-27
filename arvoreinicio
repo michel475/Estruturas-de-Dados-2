@@ -1,0 +1,39 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct no{
+	int dado;
+	struct no *esq;
+	struct no *dir;
+}No;
+
+typedef struct root{
+	int quantidade;
+	No *raiz;
+}Root;
+
+void inicializeTree(Root *rt)
+{
+	if(rt != NULL)
+	{
+		rt->raiz = NULL;
+		rt->quantidade = 0;
+	}
+}
+
+void imprimeArvore(No *raiz)
+{
+	if(raiz!=NULL)
+	{
+		printf("%d ", raiz->dado);
+		imprimeArvore(raiz->esq);
+		imprimeArvore(raiz->dir);
+	}
+}
+
+int main()
+{
+	Root *b_tree = (Root*)malloc(sizeof(Root));
+	inicializeTree(b_tree);
+	
+}
