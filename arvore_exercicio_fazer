@@ -1,151 +1,158 @@
 #include <stdio.h>
 #include <stdlib.h>
-#define MAX 100
 
-
-typedef struct arv{
-	int dado;
-	struct arv *esq; //Receberá o indice do filho a esquerda
-	struct arv *dir; //Receberá o indice do filho a direita
+typedef struct arv
+{ 
+    struct arv *esq;
+    int item;
+    struct arv *dir;
 } *Arv;
 
 typedef struct no{
-	Arv B;
+	Arv dado;
 	struct no *prox;
 }No;
 
-typedef struct raiz{
-	int quantidade;
-	Arv *raiz;
-};
-
 typedef struct fila{
+	int qtd;
 	No *inicio;
 	No *fim;
-	int qtd;		
 }Fila;
 
-void enfileirar(Arv A, Fila *F)
-{
-	//insere o nó A na fila
-	if(F == NULL)
-		return;
-	No *no = (No*)malloc(sizeof(No));
-	if(no==NULL)
-		return;
-	no->B = A;
-	no->prox = NULL;
-	F->fim->prox = no;
-	F->fim = no;
-}
-
-Arv desenfileira(Fila *F)
-{
-	if(F == NULL)
-		return 0;
-	No *aux = F->inicio;
-	F->inicio = F->inicio->prox;
-	
-	return aux->B;
-	//vai retornar o nó que será desenfileirado
-}
-
-Arv insereArv(Arv e, int n, Arv d)
-{
-	Arv g;
-	g->esq = e;
-	g->dado = n;
-	g->dir = d;
-	
-	return g;
-}
-
-void emordem(Arv A)
-{
-	if(A == NULL)
-		return;
-	emordem(A->esq);
-	printf(" %d", A->dado);
-	emordem(A->dir);
+//função recebe ponteiros para arvores esquerda (e) e direita (d) e um item N inteiro.
+//cria um nó de árvore binária e atribui os valores repassados como parâmetros
+//retorna o endereço da arvore inserida.
+Arv insereArv( Arv e, int N, Arv d){
+    Arv novo = malloc (sizeof (struct arv));
+    novo->esq = e;
+    novo->item = N;
+    novo->dir = d;
+    return novo;
 }
 
 Fila* fila()
 {
 	Fila *F = (Fila*)malloc(sizeof(Fila));
-	if(F != NULL)
+	if(F!=NULL)
 	{
 		F->inicio = F->fim = NULL;
-		F->qtd = 0;
+		F->qtd = 0
 	}
-	
-	return F;
+}
+
+void enfileira(Arv A, Fila *F)
+{
+	if(F == NULL)
+		return;
+	No *no = (No*)malloc(sizeof(No));
+	if(no == NULL)
+		return;
+	no->dado = A;
+	no->prox = NULL;
+	if(F->inicio == NULL)
+	{
+		F->inicio = no;
+		F->fim = no;
+	}
+	else{
+		F->fim->prox = no;
+		F->fim = no;
+	}
+	F->qtd+=1;
+}
+
+Arv* desenfileira(Fila *F)
+{
+	if(F == NULL)
+		return NULL;
+	Arv *aux = F->inicio->dado;
+	No *ax = F->inicio;
+	F->inicio = F->inicio->prox;
+	free(ax);
+	return aux;
 }
 
 int vaziaf(Fila *F)
 {
 	if(F->inicio == NULL)
+	{
 		return 1;
+	}
 	else{
 		return 0;
 	}
 }
-
+//Recebe um enderço da Raiz R e cria árvore vazia
+void criaArv (Arv R);
 void percursoLargura(Arv A){
     if (A == NULL)
         return;
-    Fila *F = fila();
-    enfileirar(A, F);
+    Fila F = fila();
+    enfileira (A, F);
     while (!vaziaf(F) ) {
-        Arv A = desenfileira (F);
-        printf ("%i", A->dado);
-        if (A->esq != NULL)
-            enfileirar(A->esq, F);
-        if (A->dir != NULL)
-            enfileirar(A->dir, F);
+        Arv B = desenfileira (F);
+        printf ("%i", B->item);
+        if (B->esq != NULL)
+            enfileira (B->esq, F);
+        if (B->dir !=NULL )
+            enfileira (B->dir, F);
     }
 }
 
-void preordem(Arv A)
-{
-	if(A == NULL)
-		return;
-	printf(" %d", A->dado);
-	preordem(A->esq);
-	preordem(A->dir);
+void percursoEmOrdem (Arv A){
+    if ( A == NULL)
+        return;
+    percursoEmOrdem (A->esq);
+    printf (" %i", A->item);
+    percursoEmOrdem (A->dir);
 }
-
-void posordem(Arv A)
-{
-	if(A == NULL)
-		return;
-	preordem(A->esq);
-	preordem(A->dir);
-	printf(" %d", A->dado);
+void percursoPreOrdem(Arv A){
+    if ( A == NULL)
+        return;
+    printf (" %i", A->item);
+    percursoEmOrdem (A->esq);
+    percursoEmOrdem (A->dir);
 }
-
-
-void destroiArvore(Arv A)
-{
-	if(A == NULL)
-		return;
-	destroiArvore(&(*A->esq));
-	destroiArvore(&(*A->dir));
-	free(A);
-	A = NULL;
+void percursoPosOrdem (Arv A){
+    if ( A == NULL)
+        return;
+    percursoEmOrdem (A->esq);
+    percursoEmOrdem (A->dir);
+    printf (" %i", A->item);
 }
-
+void destroiArvore (Arv *A){
+    if ( *A == NULL )
+        return;
+    destroiArvore (&(*A)->esq);
+    destroiArvore (&(*A)->dir);
+    free(*A);
+    *A = NULL;
+}
 int main()
 {
-	Arv R = insereArv(insereArv(insereArv(NULL, 4, NULL), 2, insereArv(NULL, 5, NULL)), 1, insereArv(NULL, 3, insereArv(NULL, 6, NULL)));
+    Arv R;
+    R = insereArv(insereArv(insereArv(NULL,
+                                       4,
+                                       NULL),
+                            2,
+                            insereArv(NULL,
+                                      5,
+                                      NULL)),
+                    1,
+                    insereArv(NULL,
+                              3,
+                              insereArv(NULL,
+                                        6,
+                                        NULL)));
     printf("Percurso Em Ordem:\n");
-    emordem (R);
+    percursoEmOrdem (R);
     printf("\nPercurso Pre Ordem:\n");
-    preordem (R);
+    percursoPreOrdem (R);
     printf("\nPercurso Pos Ordem:\n");
-    posordem (R);
+    percursoPosOrdem (R);
     
     printf("\nDestruindo a arvore!\n");
-    destroiArvore (R);
-    emordem (R);
-    return 0;	
+    destroiArvore (&R);
+    percursoEmOrdem (R);
+    return 0;
 }
