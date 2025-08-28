@@ -1,0 +1,132 @@
+#include <stdio.h>
+#include <stdlib.h>
+#define MAX 100
+
+
+typedef struct arv{
+	int dado;
+	struct arv *esq;
+	struct arv *dir;
+} *Arv;
+
+typedef struct fila{
+	Arv dados[MAX];
+	int inicio, fim, quantidade;
+}Fila;
+
+void enfileirar(Arv A, Fila F)
+{
+	if(F == NULL)
+		return;
+	F->dados[F->fim] = A;
+	F->fim = (F->fim+1)%MAX;
+	F->quantidade+=1;
+}
+
+void desinfileirar(Fila F)
+{
+	if(F == NULL)
+		return;
+	F->inicio = (F->inicio+1)%MAX;
+	F->quantidade-=1;
+}
+
+Arv insereArv(Arv e, int n, Arv d)
+{
+	Arv no = malloc(sizeof(struct arv));
+	no->esq = e;
+	no->dado = n;
+	no->dir = d;
+	
+	return no;
+}
+
+void enfileirar(Arv A, Fila F)
+{
+	if(F == NULL)
+		return;
+	F->fim = A;
+}
+
+void desenfileirar(Fila F)
+{
+	if(F == NULL)
+		return;
+	F->inicio = (F->inicio+1)%MAX;
+}
+
+void emordem(Arv A)
+{
+	if(A == NULL)
+		return;
+	emordem(A->esq);
+	printf(" %d", A->dado);
+	emordem(A->dir);
+}
+
+Fila fila(int max)
+{
+	Fila F;
+	F->dados
+}
+
+void descobrirH(Arv A)
+{
+	if(A == NULL)
+		return;
+	
+}
+
+void percursoLargura(Arv A){
+    if (A == NULL)
+        return;
+    Fila F = fila(MAX);
+    enfileira (A, F);
+    while (!vaziaf(F) ) {
+        Arv = desenfileira (F);
+        printf ("%i", A->item);
+        if (A->esq != NULL)
+            enfileira (A->esq, F);
+        if (A->dir !=NULL )
+            enfileira (A->dir, F);
+    }
+}
+
+void preordem(Arv A)
+{
+	if(A == NULL)
+		return;
+	printf(" %d", A->dado);
+	preordem(A->esq);
+	preordem(A->dir);
+}
+
+void posordem(Arv A)
+{
+	if(A == NULL)
+		return;
+	preordem(A->esq);
+	preordem(A->dir);
+	printf(" %d", A->dado);
+}
+
+int inserirEsq(Arv A)
+{
+	if(A == NULL)
+		return 0;
+}
+
+void destroiArvore(Arv A)
+{
+	if( *A == NULL)
+		return;
+	destroiArvore(&(*A->esq));
+	destroiArvore(&(*A->dir));
+	free(*A);
+	*A = NULL;
+}
+
+int main()
+{
+	
+}
