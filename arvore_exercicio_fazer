@@ -5,9 +5,9 @@
 
 typedef struct arv{
 	int dado;
-	struct arv *esq;
-	struct arv *dir;
-} *Arv;
+	int esq; //Receberá o indice do filho a esquerda
+	int dir; //Receberá o indice do filho a direita
+}Arv;
 
 typedef struct fila{
 	Arv dados[MAX];
@@ -23,12 +23,14 @@ void enfileirar(Arv A, Fila F)
 	F->quantidade+=1;
 }
 
-void desinfileirar(Fila F)
+Arv desenfileira(Fila F)
 {
 	if(F == NULL)
 		return;
+	Arv C = F->dados[F->inicio];
 	F->inicio = (F->inicio+1)%MAX;
 	F->quantidade-=1;
+	return C;
 }
 
 Arv insereArv(Arv e, int n, Arv d)
@@ -41,20 +43,6 @@ Arv insereArv(Arv e, int n, Arv d)
 	return no;
 }
 
-void enfileirar(Arv A, Fila F)
-{
-	if(F == NULL)
-		return;
-	F->fim = A;
-}
-
-void desenfileirar(Fila F)
-{
-	if(F == NULL)
-		return;
-	F->inicio = (F->inicio+1)%MAX;
-}
-
 void emordem(Arv A)
 {
 	if(A == NULL)
@@ -64,30 +52,37 @@ void emordem(Arv A)
 	emordem(A->dir);
 }
 
-Fila fila(int max)
+Fila fila()
 {
-	Fila F;
-	F->dados
+	Fila F = malloc(sizeof(struct fila));
+	if(F != NULL)
+	{
+		F->inicio = F->fim = F->quantidade = 0;
+	}
+	
+	return F;
 }
 
-void descobrirH(Arv A)
+int vaziaf(Fila F)
 {
-	if(A == NULL)
-		return;
-	
+	if(F->inicio == 0)
+		return 1;
+	else{
+		return 0;
+	}
 }
 
 void percursoLargura(Arv A){
     if (A == NULL)
         return;
-    Fila F = fila(MAX);
+    Fila F = fila();
     enfileira (A, F);
     while (!vaziaf(F) ) {
-        Arv = desenfileira (F);
+        Arv A = desenfileira (F);
         printf ("%i", A->item);
-        if (A->esq != NULL)
+        if (A->esq != -1)
             enfileira (A->esq, F);
-        if (A->dir !=NULL )
+        if (A->dir != -1 )
             enfileira (A->dir, F);
     }
 }
