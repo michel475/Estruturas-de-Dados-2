@@ -23,7 +23,7 @@ typedef struct fila{
 //cria um nó de árvore binária e atribui os valores repassados como parâmetros
 //retorna o endereço da arvore inserida.
 Arv insereArv( Arv e, int N, Arv d){
-    Arv novo = malloc (sizeof (struct arv));
+    Arv novo = (Arv)malloc(sizeof(Arv));
     novo->esq = e;
     novo->item = N;
     novo->dir = d;
@@ -36,7 +36,7 @@ Fila* fila()
 	if(F!=NULL)
 	{
 		F->inicio = F->fim = NULL;
-		F->qtd = 0
+		F->qtd = 0;
 	}
 }
 
@@ -61,11 +61,11 @@ void enfileira(Arv A, Fila *F)
 	F->qtd+=1;
 }
 
-Arv* desenfileira(Fila *F)
+Arv desenfileira(Fila *F)
 {
 	if(F == NULL)
 		return NULL;
-	Arv *aux = F->inicio->dado;
+	Arv aux = F->inicio->dado;
 	No *ax = F->inicio;
 	F->inicio = F->inicio->prox;
 	free(ax);
@@ -87,11 +87,11 @@ void criaArv (Arv R);
 void percursoLargura(Arv A){
     if (A == NULL)
         return;
-    Fila F = fila();
+    Fila *F = fila();
     enfileira (A, F);
     while (!vaziaf(F) ) {
         Arv B = desenfileira (F);
-        printf ("%i", B->item);
+        printf (" %i", B->item);
         if (B->esq != NULL)
             enfileira (B->esq, F);
         if (B->dir !=NULL )
@@ -150,6 +150,8 @@ int main()
     percursoPreOrdem (R);
     printf("\nPercurso Pos Ordem:\n");
     percursoPosOrdem (R);
+    printf("\nPercurso Largura:\n");
+    percursoLargura(R);
     
     printf("\nDestruindo a arvore!\n");
     destroiArvore (&R);
