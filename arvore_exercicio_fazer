@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-
+//Mudar a função que utiliza pilha, pilha é retornando do topo para o inicio, logo, o ponteiro deve ser *ant e não *prox;
 typedef struct arv
 { 
     struct arv *esq;
@@ -13,11 +13,21 @@ typedef struct no{
 	struct no *prox;
 }No;
 
+typedef struct no2{
+	Arv dado;
+	struct no2 *ant;
+}No2;
+
 typedef struct fila{
 	int qtd;
 	No *inicio;
 	No *fim;
 }Fila;
+
+typedef struct pilha{
+	int quantidade;
+	No2 *topo;
+}Pilha;
 
 //função recebe ponteiros para arvores esquerda (e) e direita (d) e um item N inteiro.
 //cria um nó de árvore binária e atribui os valores repassados como parâmetros
@@ -83,7 +93,47 @@ int vaziaf(Fila *F)
 	}
 }
 //Recebe um enderço da Raiz R e cria árvore vazia
-void criaArv (Arv R);
+void criaArv (Arv R)
+{
+	R = NULL;
+}
+
+void qntnos(Arv A, int *a)
+{
+	if(A == NULL)
+		return;
+	qntnos(A->esq, a+1);
+	qntnos(A->dir, a+1);
+}
+
+void empilha(Arv A, Pilha *P)
+{
+	if(P == NULL)
+		return;
+	No2 *no2 = (No2*)malloc(sizeof(No2));
+	if(no2 == NULL)
+		return;
+	no2->dado = A;
+	no2->ant = NULL;
+	if(P->topo == NULL)
+	{
+		P->topo = no2;
+	}
+	else{
+		no2->ant = P->topo;
+		P->topo = no2;
+	}
+	P->quantidade+=1;
+}
+
+Arv desempilha(Pilha *P)
+{
+	Arv aux = P->topo->dado;
+	No2 *ax = P->topo;
+	P->topo = P->topo->ant;
+	free(ax);
+	return aux;
+}
 void percursoLargura(Arv A){
     if (A == NULL)
         return;
@@ -96,6 +146,45 @@ void percursoLargura(Arv A){
             enfileira (B->esq, F);
         if (B->dir !=NULL )
             enfileira (B->dir, F);
+    }
+}
+
+Pilha* pilha()
+{
+	Pilha *P = (Pilha*)malloc(sizeof(Pilha));
+	if(P != NULL)
+	{
+		P->topo = NULL;
+		P->quantidade = 0;
+	}
+	
+	return P;
+}
+
+int vaziap(Pilha *P)
+{
+	if(P == NULL)
+	{
+		return 1;
+	}
+	else{
+		return 0;
+	}
+}
+
+void percursoLargura2(Arv A)
+{
+	if (A == NULL)
+        return;
+    Pilha *P = pilha();
+    empilha (A, P);
+    while (!vaziap(P) ) {
+        Arv B = desempilha (P);
+        printf (" %i", B->item);
+        if (B->esq != NULL)
+            empilha (B->esq, P);
+        if (B->dir !=NULL )
+            empilha (B->dir, P);
     }
 }
 
@@ -128,6 +217,16 @@ void destroiArvore (Arv *A){
     free(*A);
     *A = NULL;
 }
+
+int altura(Arv A, int a)
+{
+	if(A == NULL)
+		return a;
+	int total_esq = a;
+	int total_dir = a;
+	total_esq = altura(A->esq, total_esq+1);
+	total_dir = altura(A->dir, total_dir+1);
+}
 int main()
 {
     Arv R;
@@ -143,16 +242,17 @@ int main()
                               3,
                               insereArv(NULL,
                                         6,
-                                        NULL)));
+                                        (insereArv(NULL, 7, NULL)))));
     printf("Percurso Em Ordem:\n");
     percursoEmOrdem (R);
     printf("\nPercurso Pre Ordem:\n");
     percursoPreOrdem (R);
     printf("\nPercurso Pos Ordem:\n");
     percursoPosOrdem (R);
-    printf("\nPercurso Largura:\n");
+    printf("\nPercurso Largura (FILA):\n");
     percursoLargura(R);
-    
+    printf("\nPercurso Largura (PILHA):\n");
+    percursoLargura2(R);
     printf("\nDestruindo a arvore!\n");
     destroiArvore (&R);
     percursoEmOrdem (R);
