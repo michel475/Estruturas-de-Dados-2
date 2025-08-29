@@ -1,0 +1,80 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct no{
+	struct no *esq;
+	int item;
+	struct no *dir;
+}No;
+
+typedef struct raiz{
+	No *raiz;
+	int quantidade;
+}Raiz;
+
+Raiz* criaArv()
+{
+	Raiz *R = (Raiz*)malloc(sizeof(Raiz));
+	if(R != NULL)
+	{
+		R->raiz = NULL;
+		R->quantidade = 0;
+	}
+	
+	return R;
+}
+
+int totalNO_arvBin(No *raiz)
+{
+	if(raiz == NULL)
+		return 0;
+	int totalesq = totalNO_arvBin(&((*raiz->esq)));
+	int totaldir = totalNO_arvBin(&((*raiz->dir)));
+	
+	return (totalesq + totaldir + 1);
+}
+
+int Altura_arvore(No *raiz)
+{
+	if(raiz == NULL)
+		return 0;
+	int totalesq = totalNO_arvBin(&((*raiz->esq)));
+	int totaldir = totalNO_arvBin(&((*raiz->dir)));
+	
+	return (totalesq > totaldir) ? totalesq : totaldir;
+}
+
+int altura_arvore(No *A)
+{
+	if(A == NULL)
+		return 0;
+	
+}
+
+void emOrdem(No *A)
+{
+	if(A == NULL)
+		return;
+	emOrdem(A->esq);
+	printf(" %d", A->item);
+	emOrdem(A->dir);
+}
+
+No* insereArv(No *e, int n, No *d)
+{
+	No *folha = (No*)malloc(sizeof(No));
+	folha->esq = NULL;
+	folha->item = n;
+	folha->dir = NULL;
+	
+	return folha;
+}
+
+int main()
+{
+	Raiz *R;
+	R = criaArv();
+	R->raiz = insereArv(insereArv(insereArv(NULL, 4, NULL), 5, NULL), 2, NULL);
+	printf("Total de nos: %d\n", totalNO_arvBin(R->raiz));
+	emOrdem(R->raiz);
+}
