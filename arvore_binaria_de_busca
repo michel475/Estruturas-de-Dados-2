@@ -1,0 +1,494 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+
+typedef struct arv
+{ 
+    struct arv *esq;
+    int item;
+    struct arv *dir;
+} *Arv;
+
+//função recebe ponteiros para arvores esquerda (e) e direita (d) e um item N inteiro.
+//cria um nó de árvore binária e atribui os valores repassados como parâmetros
+//retorna o endereço da arvore inserida.
+
+//Definição do tipo no para manipulação numa estrutura de dados do tipo fila
+typedef struct no{
+	Arv dado;
+	struct no *prox;
+}No;
+
+//Definição do tipo fila para uso na função percursoLargura()
+typedef struct fila{
+	int qtd;
+	No *inicio;
+	No *fim;
+}Fila;
+
+
+Arv insereArv( Arv e, int N, Arv d)
+{
+	Arv A = (Arv) malloc(sizeof(struct arv));
+	A->item = N;
+	A->esq = e;
+	A->dir = d;
+	
+	return A;
+}
+
+Fila* fila()
+{
+	Fila *F = (Fila*)malloc(sizeof(Fila));
+	if(F!=NULL)
+	{
+		F->inicio = F->fim = NULL;
+		F->qtd = 0;
+	}
+	
+	return F;
+}
+
+//Função que recebe como parâmetro o endereço de um tipo Arv e o endereço de uma estrutura fila, aloca dinamicamente um nó para inserir na estrutura fila
+void enfileira(Arv A, Fila *F)
+{
+	if(F == NULL)
+		return;
+	No *no = (No*)malloc(sizeof(No));
+	if(no == NULL)
+		return;
+	no->dado = A;
+	no->prox = NULL;
+	if(F->inicio == NULL)
+	{
+		F->inicio = no;
+		F->fim = no;
+	}
+	else{
+		F->fim->prox = no;
+		F->fim = no;
+	}
+	F->qtd+=1; //Incrementa a variável que representa a quantidade de elementos da fila
+	
+	//Não há retorno na função, parâmetro de retorno == void
+}
+
+//A função desenfileira(), recebe como parâmetro o endereço de uma estrutura fila, e remove o elemento cujo o endereço está no ponteiro inicio
+Arv desenfileira(Fila *F)
+{
+	if(F == NULL || F->inicio == NULL)
+		return NULL;
+	Arv aux = F->inicio->dado;
+	No *ax = F->inicio;
+	F->inicio = F->inicio->prox;
+	free(ax);
+	return aux; //Retorna o nó da árvore que foi removido da fila
+}
+
+int vaziaf(Fila *F)
+{
+	if(F->inicio == NULL)
+		return 1;
+	else{
+		return 0;
+	}
+}
+
+//Recebe um enderço da Raiz R e cria árvore vazia
+void criaArv (Arv R)
+{
+	R = NULL;
+}
+
+void percursoLargura (Arv A)
+{
+	if (A == NULL)
+	        return;
+	Fila *F = fila();
+	enfileira (A, F);
+    while (vaziaf(F) == 0) {
+	    Arv B = desenfileira (F);
+	    printf (" %d", B->item);
+	    if (B->esq != NULL)
+	    	enfileira (B->esq, F);
+	    if (B->dir !=NULL )
+	        enfileira (B->dir, F);
+	}
+}
+
+void percursoEmOrdem (Arv A)
+{
+	if(A == NULL)
+		return;
+	percursoEmOrdem(A->esq);
+	printf(" %d", A->item);
+	percursoEmOrdem(A->dir);
+}
+
+void imprimeExpressao (Arv A)
+{
+	if(A == NULL)
+		return;
+	imprimeExpressao(A->esq);
+	if(A->item >= 0 && A->item <= 9)
+		printf("%d", A->item);
+	else
+		printf("%c", A->item);
+	imprimeExpressao(A->dir);
+}
+
+int valorA(Arv *A)
+{
+	if(A == NULL)
+		return 0;
+	if(*A == NULL)
+		return 0;
+	int a = valorA(&(*A)->esq);
+	int b = (*A)->item;
+	int c = valorA(&(*A)->dir);
+	if((char)b == '+')
+	{
+		return a+c;
+	}
+	else{
+		if((char)b == '-')
+			return a-c;
+		else
+			if((char)b == '*')
+				return a*c;
+			else
+				if((char)b == '/')
+					return a/c;
+	}
+}
+
+void percursoPreOrdem (Arv A)
+{
+	if(A == NULL)
+		return;
+	printf(" %d", A->item);
+	percursoPreOrdem(A->esq);
+	percursoPreOrdem(A->dir);
+}
+
+void percursoPosOrdem (Arv A)
+{
+	if(A == NULL)
+		return;
+	percursoPosOrdem(A->esq);
+	percursoPosOrdem(A->dir);
+	printf(" %d", A->item);
+}
+
+void destroiArvore (Arv *A)
+{
+	if(*A == NULL)
+		return;
+	destroiArvore(&(*A)->esq);
+	destroiArvore(&(*A)->dir);
+	free(*A);
+	*A = NULL;
+}
+
+void insereBB (int X, Arv *A)
+{
+	if(*A == NULL)
+	{
+		*A = insereArv(NULL, X, NULL);
+	}
+	else{
+		if(X <= (*A)->item)
+		{
+			insereBB(X, &(*A)->esq);
+		}
+		else{
+			insereBB(X, &(*A)->dir);
+		}
+	}
+}
+
+int buscaBB (int X, Arv A)
+{
+	if(A == NULL)
+		return 0;
+	else{
+		if(X == A->item)
+		{
+			return 1;
+		}
+		else{
+			if(X < A->item)
+			{
+				return buscaBB(X, A->esq);
+			}
+			else{
+				return buscaBB(X, A->dir);
+			}
+		}
+	}
+}
+int removeMax (Arv *A)
+{
+	if(*A == NULL)
+		return 0;
+	while((*A)->dir != NULL)
+	{
+		A = &(*A)->dir;
+	}
+	Arv n = *A;
+	int X = n->item;
+	*A = n->esq;
+	free(n);
+	return X;
+}
+void removeItem (int X, Arv *A)
+{
+	if(*A == NULL)
+	{
+		return;
+	}
+	if(X == (*A)->item)
+	{
+		Arv n = *A;
+		if(n->esq == NULL)
+		{
+			*A = n->esq;
+		}
+		else{
+			n->item = removeMax(&n->esq);
+			if(n != *A)
+				free(n);
+		}
+	}
+	else{
+		if(X <= (*A)->item)
+		{
+			removeItem(X, &(*A)->esq);
+		}
+		else{
+			removeItem(X, &(*A)->dir);
+		}
+	}
+}
+
+int verificaVazia (Arv *A){
+    if (A == NULL)
+        return 1;
+    if (*A == NULL)
+        return 1;
+    return 0;
+}
+
+int totalNos (Arv *A) {
+    if (A == NULL)
+        return 0;
+    if (*A == NULL)
+        return 0;
+    int totalEsq = totalNos (&((*A)->esq));
+    int totalDir = totalNos (&((*A)->dir));
+    return (totalEsq + totalDir +1);
+}
+
+int totalFolhas(Arv *A)
+{
+	if(A == NULL)
+		return 0;
+	if(*A == NULL)
+		return 0;
+	if((*A)->dir == NULL && (*A)->esq == NULL)
+	{
+		return 1;
+	}
+	else{
+		return totalFolhas(&(*A)->esq) + totalFolhas(&(*A)->dir);
+	}
+}
+
+int temX(int X, Arv A)
+{
+	if(A == NULL)
+		return 0;
+	if(A->item == X)
+		return 1;
+	else{
+		temX(X, A->esq);
+		temX(X, A->dir);
+	}
+}
+
+int estBinaria(Arv A)
+{
+	if(A == NULL)
+		return 0;
+	if(A->dir == NULL && A->esq == NULL)
+		return 1;
+	else{
+		if(A->dir != NULL && A->esq != NULL)
+		{
+			if(estBinaria(A->esq) && estBinaria(A->dir))
+				return 1;
+			else{
+				return 0;
+			}
+		}
+		else{
+			if(A->dir == NULL ^ A->esq == NULL)
+				return 0;
+		}
+	}
+	
+	return 1;
+}
+
+int igualAB(Arv *A, Arv *B)
+{
+	if(A == NULL || B == NULL)
+		return 0;
+	if(*A == NULL ^ *B == NULL)
+		return 0;
+	if(*A == NULL && *B == NULL)
+		return 1;
+	if((*A)->item == (*B)->item)
+	{
+		if(igualAB(&(*A)->esq, &(*B)->esq) && igualAB(&(*A)->dir, &(*B)->dir))
+		{
+			return 1;
+		}
+		else
+			return 0;
+	}
+	else{
+		return 0;
+	}
+}
+
+int altura(Arv *A)
+{
+	if(A == NULL)
+		return 0;
+	if(*A == NULL)
+		return 0;
+	int caminhoesq = altura(&(*A)->esq);
+	int caminhodir = altura(&(*A)->dir);
+	if((*A)->esq == NULL && (*A)->dir == NULL)
+	{
+		if(caminhoesq > caminhodir)
+			return caminhoesq;
+		else
+			return caminhodir;
+	}
+	else{
+		if((*A) != NULL)
+		{
+			if(caminhoesq > caminhodir)
+			{
+				return caminhoesq + 1;
+			}
+			else{
+				return caminhodir + 1;
+			}
+		}
+	}
+}
+
+int main()
+{
+    Arv R = NULL;
+    Arv K = NULL;
+    Arv P = NULL;
+    Arv Alta = NULL;
+    
+    insereBB (5, &R);
+    insereBB (7, &R);
+    insereBB (3, &R);
+    insereBB (9, &R);
+    insereBB (1, &R);
+    insereBB (6, &R);
+    insereBB (4, &R);
+    insereBB (8, &R);
+    insereBB (0, &R);
+    insereBB (2, &R);
+    
+    insereBB (5, &K);
+    insereBB (7, &K);
+    insereBB (3, &K);
+    insereBB (9, &K);
+    insereBB (1, &K);
+    insereBB (6, &K);
+    insereBB (4, &K);
+    insereBB (8, &K);
+    insereBB (0, &K);
+    insereBB (2, &K);
+    
+    P = insereArv(insereArv(insereArv(insereArv(NULL, 5, NULL), '+', insereArv(NULL, 3, NULL)), '/', insereArv(NULL, 4, NULL)), '*', insereArv(insereArv(NULL, 6, NULL), '-', insereArv(NULL, 1, NULL)));
+    Alta = insereArv(insereArv(NULL, 0, NULL), 1, insereArv(NULL, 4, insereArv(insereArv(NULL, 5, NULL), 6, insereArv(NULL, 7, insereArv(NULL, 9, insereArv(NULL, 10, NULL))))));
+    printf("Percurso Em Ordem:\n");
+    percursoEmOrdem (R);
+    printf("\nPercurso Pre Ordem:\n");
+    percursoPreOrdem (R);
+    printf("\nPercurso Pos Ordem:\n");
+    percursoPosOrdem (R);
+    
+    printf("\nBuscando elemento:");
+    if ( buscaBB (5, R) == 1)
+        printf ("\nElemento 5 encontrado na árvore.");
+    else
+        printf ("\nElemento não encontrado na árvore.");
+        
+    printf ("\nElemento Máximo removido da árvore:%i.", removeMax (&R) );   
+    
+    printf ("\nElemento 5 removido da árvore.");
+    removeItem (5, &R);  
+    
+    printf("\nPercurso Em Ordem:\n");
+    percursoEmOrdem (R);
+    printf("\nPercurso Largura:\n");
+    percursoLargura (R);
+    
+    int a = totalNos(&R);
+    printf("\nTotal de nos na arvore: %d\n", a);
+	a = totalFolhas(&R);
+    printf("Total de nos folha da arvore: %d\n", a);
+    if(temX(7, R))
+    {
+    	printf("Elemento encontrado\n");
+	}
+	else{
+		printf("Elemento nao encontrado\n");
+	}
+	if(estBinaria(R))
+	{
+		printf("Arvore estritamente binaria\n");
+	}
+	else{
+		printf("Arvore nao estritamente binaria\n");
+	}
+	printf("\nBuscando elemento:");
+    if ( buscaBB (5, K) == 1)
+        printf ("\nElemento 5 encontrado na árvore.");
+    else
+        printf ("\nElemento não encontrado na árvore.");
+        
+    printf ("\nElemento Máximo removido da árvore:%i.", removeMax (&K) );   
+    
+    printf ("\nElemento 5 removido da árvore.");
+    removeItem (5, &K); 
+    
+	if(igualAB(&R, &K))
+		printf("\nArvores sao iguais\n");
+	else{
+		printf("\nArvores nao sao iguais\n");
+	}
+	
+	printf("\nExpressao matematica\n");
+	imprimeExpressao(P);
+	
+	printf("\nresultado: %d\n", valorA(&P));
+	
+	printf("\nAltura arvore R: %d\n", altura(&R));
+	printf("\nAltura arvore P: %d\n", altura(&P));
+	printf("\nAltura arvore Alta: %d\n", altura(&Alta));
+    
+    destroiArvore (&R);
+    return 0;
+}
