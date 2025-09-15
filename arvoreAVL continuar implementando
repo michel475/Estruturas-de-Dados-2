@@ -1,0 +1,174 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct arv{
+	int item;
+	int altura;
+	struct arv *esq;
+	struct arv *dir;
+} *Arv;
+
+typedef struct no{
+	Arv arv;
+	struct no *prox;
+}No;
+
+typedef struct fila{
+	No *inicio;
+	No *fim;
+	int quantidade;
+};
+
+
+Arv insereArv(Arv e, int N, Arv d)
+{
+	Arv A = (Arv) malloc(sizeof(struct arv));
+	A->item = n;
+	A->esq = e;
+	A->dir = d;
+	
+	return A;
+}
+
+void criaArv(Arv R)
+{
+	R = NULL;
+}
+
+Fila* iniciarFila()
+{
+	Fila *f;
+	f = (Fila*) malloc(sizeof(Fila));
+	if(f != NULL)
+	{
+		f->inicio = NULL;
+		f->fim = NULL;
+		f->quantidade = NULL;
+	}
+}
+
+void enfileira(Arv A, Fila *f)
+{
+	if(f == NULL)
+		return;
+	No *novo;
+	novo = (No*)malloc(sizeof(No));
+	if(novo == NULL)
+		return;
+	novo->arv = A;
+	novo->prox = NULL;
+	if(f->inicio == NULL)
+	{
+		f->inicio = novo;
+		f->fim = novo;
+	}
+	else{
+		f->fim->prox = novo;
+		f->fim = novo;
+	}
+	f->quantidade+=1;
+}
+
+Arv desenfileira(Fila *f)
+{
+	if(f == NULL)
+		return NULL;
+	Arv A = f->fim->arv;
+	
+	return A;
+}
+
+int FilaVazia(Fila *f)
+{
+	if(f == NULL)
+		return NULL;
+	return f->inicio == NULL;
+}
+
+void percursoEmOrdem(Arv A)
+{
+	if(A == NULL)
+		return;
+	percursoEmOrdem(A->esq);
+	printf("%d ", A->item);
+	percursoEmOrdem(A->dir);
+}
+
+void percursoPreOrdem(Arv A)
+{
+	if(A == NULL)
+		return;
+	printf("%d ", A->item);
+	percursoPreOrdem(A->esq);
+	percursoPreOrdem(A->dir);
+}
+
+void percursoPosOrdem(Arv A)
+{
+	if(A == NULL)
+		return;
+	percursoPosOrdem(A->esq);
+	percursoPosOrdem(A->dir);
+	printf("%d ", A->item);
+}
+
+void percursoLargura(Arv A)
+{
+	if(A == NULL)
+		return;
+	Fila *f = iniciarFila();
+	enfileira(A, f);
+	while(FilaVazia(F) == 0)
+	{
+		A = desenfileira(f);
+		printf("%d ", A->item);
+		if(A->esq != NULL)
+		{
+			enfileira(A->esq, f);
+		}
+		if(A->dir != NULL)
+		{
+			enfileira(A->dir, f);
+		}
+	}
+}
+
+int totalNoArvore(Arv *A)
+{
+	if(A == NULL)
+		return 0;
+	int totalesq = totalNoArvore(&(*A)->esq);
+	int totaldir = totalNoArvore(&(*A)->dir);
+	
+	return totalesq + totaldir + 1;
+}
+
+int alturaArvore(Arv *A)
+{
+	if(A == NULL)
+		return 0;
+	int caminhoesq = alturaArvore(&(*A)->esq);
+	int caminhodir = alturaArvore(&(*A)->dir);
+	
+	if(caminhoesq > caminhodir)
+		return caminhoesq + 1;
+	else{
+		return caminhodir + 1;
+	}
+}
+
+void removeItem(int X, Arv *A)
+{
+	if(A == NULL)
+		return;
+	
+}
+
+int alturaNo(Arv A)
+{
+	if(A == NULL)
+		return -1;
+	else{
+		return A->altura;
+	}
+}
