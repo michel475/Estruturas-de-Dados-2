@@ -1,6 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-
 typedef struct arv{
 	int item;
 	int altura;
@@ -170,5 +167,75 @@ int alturaNo(Arv A)
 		return -1;
 	else{
 		return A->altura;
+	}
+}
+
+void rotacaoLL(Arv *A)
+{
+	Arv B;
+	B = (*A)->esq;
+	(*A)->esq = B->dir;
+	B->dir = *A;
+	(*A)->altura = maior(alturaNo((*A)->esq), alturaNo((*A)->dir)) + 1;
+	B->altura = maior(alturaNo(B->esq), alturaNo(B->dir)) + 1;
+	*A = B;
+}
+
+void rotacaoRR(Arv *A)
+{
+	Arv B;
+	B = (*A)->dir;
+	(*A)->dir = B->esq;
+	B->esq = *A;
+	(*A)->altura = maior(alturaNo((*A)->esq), alturaNo((*A)->dir)) + 1;
+	B->altura = maior(alturaNo(B->esq), alturaNo(B->dir)) + 1;
+	*A = B;
+}
+
+void rotacaoLR(Arv *A)
+{
+	rotacaoRR(&(*A)->esq);
+	rotacaoLL(A);
+}
+
+void rotacaoRL(Arv *A)
+{
+	rotacaoLL(&(*A)->dir);
+	rotacaoRR(A);
+}
+
+int fatorBalNo(Arv A)
+{
+	return labs(alturaNo(A->esq) - alturaNo(A->dir));
+}
+
+int inserirAVL(int X, Arv *A)
+{
+	if(*A == NULL)
+	{
+		A = insereArv(NULL, X, NULL);
+	}
+	else{
+		if(X > (*A)->item)
+		{
+			inserirAVL(X, &(*A)->dir);
+		}
+		else{
+			inserirAVL(X, &(*A)->esq);
+		}
+	}
+	if(*A != NULL)
+	{
+		(*A)->altura = maior(alturaNo((*A)->esq), alturaNo((*A)->dir)) + 1;
+	}
+	//calcular o fator de balanceamento e fazer rotações se necessário após a inserção
+}
+
+int maior(int X, int Y)
+{
+	if(X > Y)
+		return X;
+	else{
+		return Y;
 	}
 }
