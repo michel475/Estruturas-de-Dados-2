@@ -1,0 +1,65 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#define MAX 300
+
+typedef struct arv{
+	char item;
+	struct arv *esq;
+	struct arv *dir;
+} *Arv;
+
+Arv insereArv(Arv e, char n, Arv d)
+{
+	Arv A = (Arv)malloc(sizeof(struct arv));
+	A->item = n;
+	A->esq = e;
+	A->dir = d;
+	
+	return A;
+}
+
+void inserir(Arv *A, char n)
+{
+	if(*A == NULL)
+	{
+		*A = insereArv(NULL, n, NULL);
+	}
+	else{
+		if((*A)->item == '*' || (*A)->item == '/' || (*A)->item == '-' || (*A)->item == '+' || (*A)->item == '^')
+		{
+			if((*A)->esq == NULL)
+				inserir(&(*A)->esq, n);
+			else
+				if((*A)->dir == NULL)
+					inserir(&(*A)->dir, n);
+		}
+		else{
+			char u = (*A)->item;
+			
+		}
+	}
+}
+
+void posordem(Arv A)
+{
+	if(A == NULL)
+		return;
+	posordem(A->esq);
+	posordem(A->dir);
+	printf("%c", A->item);
+}
+
+int main()
+{
+	Arv R = NULL;
+	char string[MAX];
+	int n, i;
+	scanf("%[^\n]s", string);
+	for(i=0; i<strlen(string); i++)
+	{
+		if(string[i]!='(' && string[i]!=')')
+			inserir(&R, string[i]);
+	}
+	posordem(R);
+}
