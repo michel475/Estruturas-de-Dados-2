@@ -16,7 +16,6 @@ typedef struct fila{
 	int quantidade;
 };
 
-
 Arv insereArv(Arv e, int N, Arv d)
 {
 	Arv A = (Arv) malloc(sizeof(struct arv));
@@ -228,7 +227,36 @@ int inserirAVL(int X, Arv *A)
 	{
 		(*A)->altura = maior(alturaNo((*A)->esq), alturaNo((*A)->dir)) + 1;
 	}
-	//calcular o fator de balanceamento e fazer rotações se necessário após a inserção
+	if(abs(fatorBalNo(A) > 1)
+	{
+		if(fatorBalNo(A) < -1)
+		{
+			if(fatorBalNo((*A)->esq) >= 0)
+			{
+				rotacaoRR(A);
+			}
+			else
+				if(fatorBalNo((*A)->esq) < 0){
+					rotacaoLL(A);
+					rotacaoRR(A);
+				}
+		}
+		else{
+			if(fatorBalNo(A) > 1)
+			{
+				if(fatorBalNo((*A)->dir) <= 0)
+				{
+					rotacaoRR(A);
+				}
+				else
+					if(fatorBalNo((*A)->dir) > 0){
+						rotacaoRR(A);
+						rotacaoLL(A);
+					}
+			}
+		}
+	}	//calcular o fator de balanceamento e fazer rotações se necessário após a inserção
+		//ajustar lógica da rotação
 }
 
 int maior(int X, int Y)
