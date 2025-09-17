@@ -1,3 +1,6 @@
+#include <stdio.h>
+#include <stdlib.h>
+
 typedef struct arv{
 	int item;
 	int altura;
@@ -14,12 +17,12 @@ typedef struct fila{
 	No *inicio;
 	No *fim;
 	int quantidade;
-};
+}Fila;
 
 Arv insereArv(Arv e, int N, Arv d)
 {
-	Arv A = (Arv) malloc(sizeof(struct arv));
-	A->item = n;
+	Arv A = (Arv)malloc(sizeof(struct arv));
+	A->item = N;
 	A->esq = e;
 	A->dir = d;
 	
@@ -39,7 +42,7 @@ Fila* iniciarFila()
 	{
 		f->inicio = NULL;
 		f->fim = NULL;
-		f->quantidade = NULL;
+		f->quantidade = 0;
 	}
 }
 
@@ -77,7 +80,7 @@ Arv desenfileira(Fila *f)
 int FilaVazia(Fila *f)
 {
 	if(f == NULL)
-		return NULL;
+		return -1;
 	return f->inicio == NULL;
 }
 
@@ -114,7 +117,7 @@ void percursoLargura(Arv A)
 		return;
 	Fila *f = iniciarFila();
 	enfileira(A, f);
-	while(FilaVazia(F) == 0)
+	while(FilaVazia(f) == 0)
 	{
 		A = desenfileira(f);
 		printf("%d ", A->item);
@@ -169,6 +172,15 @@ int alturaNo(Arv A)
 	}
 }
 
+int maior(int X, int Y)
+{
+	if(X > Y)
+		return X;
+	else{
+		return Y;
+	}
+}
+
 void rotacaoLL(Arv *A)
 {
 	Arv B;
@@ -208,67 +220,60 @@ int fatorBalNo(Arv A)
 	return labs(alturaNo(A->esq) - alturaNo(A->dir));
 }
 
-int inserirAVL(int X, Arv *A)
+int insereAVL(int X, Arv *A)
 {
 	if(*A == NULL)
 	{
-		A = insereArv(NULL, X, NULL);
+		*A = insereArv(NULL, X, NULL);
 	}
 	else{
 		if(X > (*A)->item)
 		{
-			inserirAVL(X, &(*A)->dir);
+			insereAVL(X, &(*A)->dir);
 		}
 		else{
-			inserirAVL(X, &(*A)->esq);
+			insereAVL(X, &(*A)->esq);
 		}
 	}
 	if(*A != NULL)
 	{
 		(*A)->altura = maior(alturaNo((*A)->esq), alturaNo((*A)->dir)) + 1;
 	}
-	if(abs(fatorBalNo(A) > 1)
+	if(fatorBalNo(*A) > 1)
 	{
-		if(fatorBalNo(A) < -1)
-		{
-			if(fatorBalNo((*A)->esq) >= 0)
-			{
-				rotacaoRR(A);
-			}
-			else
-				if(fatorBalNo((*A)->esq) < 0){
-					rotacaoLL(A);
-					rotacaoRR(A);
-				}
-		}
-		else{
-			if(fatorBalNo(A) > 1)
-			{
-				if(fatorBalNo((*A)->dir) <= 0)
-				{
-					rotacaoRR(A);
-				}
-				else
-					if(fatorBalNo((*A)->dir) > 0){
-						rotacaoRR(A);
-						rotacaoLL(A);
-					}
-			}
-		}
-	}	//calcular o fator de balanceamento e fazer rotações se necessário após a inserção
-		//ajustar lógica da rotação
-}
-
-int maior(int X, int Y)
-{
-	if(X > Y)
-		return X;
+	    if(fatorBalNo((*A)->esq) >= 0)
+	    {
+	        rotacaoLL(A);
+	    }
+	    else{
+	        rotacaoLR(A);
+	    }
+	}
 	else{
-		return Y;
+	    if(fatorBalNo((*A)) < -1)
+	    {
+	        if(fatorBalNo((*A)->dir) <= 0)
+	        {
+	            rotacaoRR(A);
+	        }
+	        else{
+	            rotacaoRL(A);
+	        }
+	    }
 	}
 }
 
 int main()
 {
-	Arv R = NULL;
+    Arv R = NULL;
+    
+    insereAVL (5, &R);
+    insereAVL (7, &R);
+    insereAVL (3, &R);
+    insereAVL (9, &R);
+    insereAVL (1, &R);
+    insereAVL (6, &R);
+    insereAVL (4, &R);
+    
+    percursoEmOrdem(R);
 }
