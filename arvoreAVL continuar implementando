@@ -267,3 +267,8 @@ int maior(int X, int Y)
 		return Y;
 	}
 }
+
+int main()
+{
+	Arv R = NULL;
+}
