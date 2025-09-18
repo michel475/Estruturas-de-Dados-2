@@ -25,6 +25,7 @@ Arv insereArv(Arv e, int N, Arv d)
 	A->item = N;
 	A->esq = e;
 	A->dir = d;
+	A->altura = 0;
 	
 	return A;
 }
@@ -156,13 +157,6 @@ int alturaArvore(Arv *A)
 	}
 }
 
-void removeItem(int X, Arv *A)
-{
-	if(A == NULL)
-		return;
-	
-}
-
 int alturaNo(Arv A)
 {
 	if(A == NULL)
@@ -220,7 +214,95 @@ int fatorBalNo(Arv A)
 	return labs(alturaNo(A->esq) - alturaNo(A->dir));
 }
 
-int insereAVL(int X, Arv *A)
+
+int removeMax(Arv *A)
+{
+	if(A == NULL)
+	{
+		return 0;
+	}
+	if((*A)->dir == NULL)
+	{
+		Arv n = *A;
+		int maior = (*A)->item;
+		free(n);
+		return maior;
+	}
+}
+
+void removeAVL(int X, Arv *A)
+{
+	if(A == NULL)
+		return;
+	if(X == (*A)->item)
+	{
+		Arv n = *A;
+		if(n->esq == NULL && n->dir == NULL)
+		{
+			*A = NULL;
+			free(n);
+		}
+		else{
+			if(n->esq == NULL && n->dir != NULL)
+			{
+				*A = n->dir;
+				free(n);
+			}
+			else{
+				if(n->dir == NULL && n->esq != NULL)
+				{
+					*A = n->esq;
+					free(n);
+				}
+				else{
+					if(n->esq != NULL && n->dir != NULL)
+					{
+						n->item = removeMax(&n->esq);
+						*A = n;
+						free(n);
+					}
+				}
+			}
+		}
+	}
+	else{
+		if(X <= (*A)->item)
+		{
+			removeAVL(X, &(*A)->esq);
+		}
+		else{
+			removeAVL(X, &(*A)->dir);
+		}
+	}
+	if(*A != NULL)
+	{
+		(*A)->altura = maior(alturaNo((*A)->esq), alturaNo((*A)->dir)) + 1;
+	}
+	if(fatorBalNo(*A) > 1)
+	{
+		if(fatorBalNo((*A)->esq) >= 0)
+		{
+			rotacaoLL(A);
+		}
+		else{
+			rotacaoLR(A);
+		}
+	}
+	else{
+		if(fatorBalNo(*A) < -1)
+		{
+			if(fatorBalNo((*A)->dir) <= 0)
+			{
+				rotacaoRR(A);
+			}
+			else{
+				rotacaoRL(A);
+			}
+		}
+	}
+}
+
+void insereAVL(int X, Arv *A)
 {
 	if(*A == NULL)
 	{
@@ -274,6 +356,7 @@ int main()
     insereAVL (1, &R);
     insereAVL (6, &R);
     insereAVL (4, &R);
-    
+    removeAVL(6, &R);
+    //consertar removeAVL()
     percursoEmOrdem(R);
 }
