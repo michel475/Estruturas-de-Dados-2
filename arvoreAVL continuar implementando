@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -73,7 +74,10 @@ Arv desenfileira(Fila *f)
 {
 	if(f == NULL)
 		return NULL;
-	Arv A = f->fim->arv;
+	No *ax = f->inicio;
+	Arv A = f->inicio->arv;
+	f->inicio = f->inicio->prox;
+	free(ax);
 	
 	return A;
 }
@@ -221,13 +225,28 @@ int removeMax(Arv *A)
 	{
 		return 0;
 	}
-	if((*A)->dir == NULL)
+	while((*A)->dir != NULL)
 	{
-		Arv n = *A;
-		int maior = (*A)->item;
-		free(n);
-		return maior;
+		A = &(*A)->dir;
 	}
+	Arv n = *A;
+	int maior = (*A)->item;
+	free(n);
+	return maior;
+}
+
+int procuramenor(Arv *A)
+{
+	if(A == NULL)
+		return 0;
+	while((*A)->esq != NULL)
+	{
+		A = &(*A)->esq;
+	}
+	Arv n = *A;
+	int menor = (*A)->item;
+	free(A);
+	return menor;
 }
 
 void removeAVL(int X, Arv *A)
@@ -236,29 +255,32 @@ void removeAVL(int X, Arv *A)
 		return;
 	if(X == (*A)->item)
 	{
-		Arv n = *A;
-		if(n->esq == NULL && n->dir == NULL)
+		if((*A)->esq == NULL && (*A)->dir == NULL)
 		{
-			*A = NULL;
+			Arv n = *A;
+			A = NULL;
 			free(n);
 		}
 		else{
-			if(n->esq == NULL && n->dir != NULL)
+			if((*A)->esq != NULL && (*A)->dir == NULL)
 			{
-				*A = n->dir;
+				Arv n = *A;
+				A = &n->esq;
 				free(n);
 			}
 			else{
-				if(n->dir == NULL && n->esq != NULL)
+				if((*A)->esq == NULL && (*A)->dir != NULL)
 				{
-					*A = n->esq;
+					Arv n = *A;
+					A = &n->dir;
 					free(n);
 				}
 				else{
-					if(n->esq != NULL && n->dir != NULL)
+					if((*A)->esq != NULL && (*A)->dir != NULL)
 					{
-						n->item = removeMax(&n->esq);
-						*A = n;
+						Arv n = *A;
+						n->item = procuramenor(&(*A)->dir);
+						(*A)->item = n->item;
 						free(n);
 					}
 				}
@@ -356,7 +378,7 @@ int main()
     insereAVL (1, &R);
     insereAVL (6, &R);
     insereAVL (4, &R);
-    removeAVL(6, &R);
-    //consertar removeAVL()
+    system("pause");
+    removeAVL(7, &R);
     percursoEmOrdem(R);
 }
