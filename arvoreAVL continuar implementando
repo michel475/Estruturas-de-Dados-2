@@ -139,7 +139,7 @@ void percursoLargura(Arv A)
 
 int totalNoArvore(Arv *A)
 {
-	if(A == NULL)
+	if(*A == NULL)
 		return 0;
 	int totalesq = totalNoArvore(&(*A)->esq);
 	int totaldir = totalNoArvore(&(*A)->dir);
@@ -235,51 +235,42 @@ int removeMax(Arv *A)
 	return maior;
 }
 
-int procuramenor(Arv *A)
+Arv procuraMenor(Arv A)
 {
-	if(A == NULL)
-		return 0;
-	while((*A)->esq != NULL)
+	Arv n = A;
+	while(n->esq != NULL)
 	{
-		A = &(*A)->esq;
+		n = n->esq;
 	}
-	Arv n = *A;
-	int menor = (*A)->item;
-	free(A);
-	return menor;
+	return n;
 }
 
-void removeAVL(int X, Arv *A)
+int removeAVL(int X, Arv *A)
 {
-	if(A == NULL)
-		return;
+	if(*A == NULL)
+	{
+		return 0;
+	}
 	if(X == (*A)->item)
 	{
 		if((*A)->esq == NULL && (*A)->dir == NULL)
 		{
-			Arv n = *A;
-			A = NULL;
-			free(n);
+			*A = NULL;
 		}
 		else{
 			if((*A)->esq != NULL && (*A)->dir == NULL)
 			{
-				Arv n = *A;
-				A = &n->esq;
-				free(n);
+				*A = (*A)->esq;
 			}
 			else{
 				if((*A)->esq == NULL && (*A)->dir != NULL)
 				{
-					Arv n = *A;
-					A = &n->dir;
-					free(n);
+					*A = (*A)->dir;
 				}
 				else{
 					if((*A)->esq != NULL && (*A)->dir != NULL)
 					{
-						Arv n = *A;
-						n->item = procuramenor(&(*A)->dir);
+						Arv n = procuraMenor((*A)->dir);
 						(*A)->item = n->item;
 						free(n);
 					}
@@ -320,6 +311,30 @@ void removeAVL(int X, Arv *A)
 			else{
 				rotacaoRL(A);
 			}
+		}
+	}
+}
+
+int verificaVazia(Arv *A)
+{
+	return (*A == NULL);
+}
+
+int buscaAVL(Arv A, int n)
+{
+	if(A == NULL)
+		return 0;
+	if(A->item == n)
+	{
+		return 1;
+	}
+	else{
+		if(n <= A->item)
+		{
+			buscaAVL(A->esq, n);
+		}
+		else{
+			buscaAVL(A->dir, n);
 		}
 	}
 }
@@ -372,13 +387,42 @@ int main()
     Arv R = NULL;
     
     insereAVL (5, &R);
-    insereAVL (7, &R);
+    /*insereAVL (7, &R);
     insereAVL (3, &R);
     insereAVL (9, &R);
     insereAVL (1, &R);
     insereAVL (6, &R);
     insereAVL (4, &R);
-    system("pause");
-    removeAVL(7, &R);
+    insereAVL (8, &R);
+    insereAVL (0, &R);
+    insereAVL (2, &R);*/
+    printf("Percurso Em Ordem:\n");
     percursoEmOrdem(R);
+    printf("\nPercurso Pre Ordem:\n");
+    percursoPreOrdem (R);
+    printf("\nPercurso Pos Ordem:\n");
+    percursoPosOrdem (R);
+    
+    printf("\nBuscando elemento:");
+    if ( buscaAVL (R, 5) == 1)
+        printf ("\nElemento 5 encontrado na árvore.");
+    else
+        printf ("\nElemento não encontrado na árvore.");
+        
+    printf ("\nTotal nos na árvore: %i.", totalNoArvore (&R));
+    printf ("\nElemento Máximo removido da árvore: %i.", removeMax (&R));   
+    
+    printf ("\nElemento 5 removido da árvore.");
+    if ( (verificaVazia (&R)) != 1)
+        removeAVL(5, &R);
+    percursoEmOrdem(R);
+    /*printf ("\nTotal nós após remoção na árvore: %i.", totalNoArvore (&R));
+    printf ("\nPercurso Em Ordem:\n");
+    percursoEmOrdem (R);
+    destroiArvore (&R);
+    if ( (verificaVazia (&R)) == 0)
+         printf ("\nArvore vazia!" ); 
+    else 
+        printf ("\nArvore não vazia!" );*/
+    return 0;
 }
