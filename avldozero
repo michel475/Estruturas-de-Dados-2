@@ -1,0 +1,268 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct arv{
+	int item;
+	int altura;
+	struct arv *esq;
+	struct arv *dir;
+} *Arv;
+
+Arv insereArv(Arv e, int N, Arv d)
+{
+	Arv A = (Arv)malloc(sizeof(struct arv));
+	if(A != NULL)
+	{
+		A->item = N;
+		A->altura = 0;
+		A->esq = e;
+		A->dir = d;
+	}
+	
+	return A;
+}
+
+int alturaNo(Arv A)
+{
+	if(A == NULL)
+		return 0;
+	return A->altura;
+}
+
+int fatorBalNo(Arv *A)
+{
+	return alturaNo((*A)->esq) - alturaNo((*A)->dir);
+}
+
+
+int maior(int X, int Y)
+{
+	if(X > Y)
+		return X;
+	else
+		return Y;
+}
+
+void rotacaoLL(Arv *A)
+{
+	Arv B = (*A)->esq;
+	(*A)->esq = B->dir;
+	B->dir = *A;
+	(*A)->altura = maior(alturaNo((*A)->esq), alturaNo((*A)->dir))+1;
+	B->altura = maior(alturaNo(B->esq), alturaNo(B->dir))+1;
+	*A = B;
+}
+
+void rotacaoRR(Arv *A)
+{
+	Arv B = (*A)->dir;
+	(*A)->dir = B->esq;
+	B->esq = *A;
+	*A = B;
+	(*A)->altura = maior(alturaNo((*A)->esq), alturaNo((*A)->dir))+1;
+	B->altura = maior(alturaNo(B->esq), alturaNo(B->dir))+1;
+	*A = B;
+	
+}
+
+void rotacaoLR(Arv *A)
+{
+	rotacaoRR(&(*A)->esq);
+	rotacaoLL(A);
+}
+
+void rotacaoRL(Arv *A)
+{
+	rotacaoLL(&(*A)->dir);
+	rotacaoLL(A);
+}
+
+int removeMax(Arv *A)
+{
+	if(A == NULL)
+		return 0;
+	while((*A)->dir != NULL)
+	{
+		A = &(*A)->dir;
+	}
+	int maior = (*A)->item;
+	if((*A)->esq == NULL)
+	{
+		free(*A);
+		*A = NULL;
+	}
+	else{
+		Arv B = (*A)->esq;
+		free(*A);
+		*A = B;
+	}
+	
+	return maior;
+}
+
+int remove_arv(int X, Arv *A)
+{
+	if(A == NULL)
+		return 0;
+	if(X == (*A)->item)
+	{
+		if((*A)->esq == NULL && (*A)->dir == NULL)
+		{
+			free(*A);
+			*A = NULL;
+		}
+		else{
+			if((*A)->esq == NULL && (*A)->dir != NULL)
+			{
+				Arv B = (*A)->dir;
+				free(*A);
+				*A = B;
+			}
+			else{
+				if((*A)->esq != NULL && (*A)->dir == NULL)
+				{
+					Arv B = (*A)->esq;
+					free(*A);
+					*A = B;
+				}
+				else{
+					if((*A)->esq != NULL && (*A)->dir != NULL)
+					{
+						int max = removeMax(&(*A)->esq);
+						(*A)->item = max;
+					}
+				}
+			}
+		}
+		return 1;
+	}
+	else{
+		if(X < (*A)->item)
+		{
+			remove_arv(X, &(*A)->esq);
+		}
+		else{
+			remove_arv(X, &(*A)->dir);
+		}
+	}
+	if(*A != NULL)
+	{
+		(*A)->altura = maior(alturaNo((*A)->esq), alturaNo((*A)->dir))+1;
+	}
+	if(fatorBalNo(A) > 1)
+	{
+		if(fatorBalNo(&(*A)->esq) >= 0)
+		{
+			rotacaoLL(A);
+		}
+		else{
+			rotacaoLR(A);
+		}
+	}
+	else{
+		if(fatorBalNo(A) < -1)
+		{
+			if(fatorBalNo(&(*A)->dir) <= 0)
+			{
+				rotacaoRR(A);
+			}
+			else{
+				rotacaoRL(A);
+			}
+		}
+	}
+}
+
+int insere_arv(int X, Arv *A)
+{
+	if(A == NULL)
+		return 0;
+	if(*A == NULL)
+	{
+		*A = insereArv(NULL, X, NULL);
+		return 1;
+	}
+	if(X <= (*A)->item)
+	{
+		insere_arv(X, &(*A)->esq);
+	}
+	else{
+		insere_arv(X, &(*A)->dir);
+	}
+	if(*A != NULL)
+	{
+		(*A)->altura = maior(alturaNo((*A)->esq), alturaNo((*A)->dir))+1;
+	}
+	if(fatorBalNo(A) > 1)
+	{
+		if(fatorBalNo(&(*A)->esq) >= 0)
+		{
+			rotacaoLL(A);
+		}
+		else{
+			rotacaoLR(A);
+		}
+	}
+	else{
+		if(fatorBalNo(A) < -1)
+		{
+			if(fatorBalNo(&(*A)->dir) <= 0)
+			{
+				rotacaoRR(A);
+			}
+			else{
+				rotacaoRL(A);
+			}
+		}
+	}
+}
+
+int total_nos(Arv A)
+{
+	if(A == NULL)
+		return 0;
+	int totalesq = total_nos(A->esq);
+	int totaldir = total_nos(A->dir);
+	
+	return (totalesq+totaldir+1);
+}
+
+int alturaArvore(Arv A)
+{
+	if(A == NULL)
+		return 0;
+	int caminhoesq = alturaArvore(A->esq);
+	int caminhodir = alturaArvore(A->dir);
+	if(caminhoesq > caminhodir)
+		return caminhoesq+1;
+	else
+		return caminhodir+1;
+}
+
+int totalNoFolha(Arv A)
+{
+	if(A == NULL)
+		return 0;
+	
+}
+
+void percursoemordem(Arv A)
+{
+	if(A == NULL)
+		return;
+	percursoemordem(A->esq);
+	printf("%d ", A->item);
+	percursoemordem(A->dir);
+}
+
+int main()
+{
+	Arv R = NULL;
+	insere_arv(5, &R);
+	insere_arv(5, &R);
+	insere_arv(5, &R);
+	insere_arv(5, &R);
+	insere_arv(5, &R);
+	percursoemordem(R);
+	printf("\nAltura da arvore: %d\nTotal de nos: %d\nTotal no folha: %d\n", alturaArvore(R), total_nos(R), totalNoFolha(R));
+}
