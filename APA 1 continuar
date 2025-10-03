@@ -1,0 +1,132 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#define PALAVRA 40
+typedef struct arv{
+	char palavra[PALAVRA];
+	struct arv *esq;
+	struct arv *dir;
+} *Arv;
+
+int ordemp(char p[], char p2[])
+{
+	if((int)p[0] < (int)p2[0])
+	{
+		return 1;
+	}
+	else{
+		if((int)p[0] > (int)p2[0])
+		{
+			return 2;
+		}
+		else{
+			int i=0;
+			while(p[i] == p2[i])
+				i++;
+			return (int)p[i] < (int)p2[i] ? 1 : 2;
+		}
+	}
+}
+
+void removemax(char p[], Arv *A)
+{
+	if(A == NULL)
+		return;
+	while((*A)->dir)
+		A = &(*A)->dir;
+	strcpy(p, (*A)->palavra);
+	Arv B = (*A)->esq;
+	free(*A);
+	*A = B;
+}
+
+int removePalavra(char p[], Arv *A)
+{
+	if(A == NULL)
+		return 0;
+	if(strcmp(p, (*A)->palavra) == 0)
+	{
+		if((*A)->esq == NULL && (*A)->dir == NULL)
+		{
+			free(*A);
+			*A = NULL;
+		}
+		else{
+			if((*A)->esq == NULL && (*A)->dir != NULL)
+			{
+				Arv B = (*A)->dir;
+				free(*A);
+				*A = B;
+			}
+			else{
+				if((*A)->esq != NULL && (*A)->dir == NULL)
+				{
+					Arv B = (*A)->esq;
+					free(*A);
+					*A = B;
+				}
+				else{
+					if((*A)->esq != NULL && (*A)->dir != NULL)
+					{
+						char palavra[PALAVRA];
+						removemax(&palavra[0], &(*A)->esq);
+						strcpy((*A)->palavra, palavra);
+					}
+				}
+			}
+		}
+		return 1;
+	}
+	else{
+		if(ordemp(&p[0], &(*A)->palavra[0]) == 1)
+			removePalavra(&p[0], &(*A)->esq);
+		else
+			if(ordemp(&p[0], &(*A)->palavra[0]) == 2)
+				removePalavra(&p[0], &(*A)->dir);
+	}
+}
+
+int inserePalavra(char p[], Arv *A)
+{
+	if(A == NULL)
+		return 0;
+	if(*A == NULL)
+	{
+		Arv novo = (Arv)malloc(sizeof(struct arv));
+		if(novo == NULL)
+			return 0;
+		strcpy(novo->palavra, p);
+		novo->esq = NULL;
+		novo->dir = NULL;
+		*A = novo;
+		
+		return 1;
+	}
+	if(ordemp(&p[0], &(*A)->palavra[0]) == 1)
+		inserePalavra(&p[0], &(*A)->esq);
+	else
+		if(ordemp(&p[0], &(*A)->palavra[0]) == 2)
+			inserePalavra(&p[0], &(*A)->dir);
+}
+
+void emordem(Arv A)
+{
+	if(A == NULL)
+		return;
+	emordem(A->esq);
+	printf("%s\n", A->palavra);
+	emordem(A->dir);
+}
+
+int main()
+{
+	Arv R = NULL;
+	char palavra[] = "Algoritmo";
+	char palavra2[] = "Estruturas";
+	inserePalavra(&palavra[0], &R);
+	inserePalavra(&palavra2[0], &R);
+	emordem(R);
+	printf("\n");
+	removePalavra(palavra, &R);
+	emordem(R);
+}
