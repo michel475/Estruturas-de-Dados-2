@@ -1,0 +1,437 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#define TAM_PALAVRA 20
+#define TAM_DEFINICAO 100
+
+typedef enum {VERMELHO, PRETO} Cor;
+typedef struct no{ //Estrutura da arvore
+	char palavra[20]; //campo palavra
+	char definicao[100]; //campo definicao
+	Cor c;
+	struct no *esq; //ponteiro para filho esquerdo
+	struct no *dir;	//ponteiro para filho direito
+	struct no *pai;
+}No;
+
+void salvarEmArquivo(No no, FILE *ptarq) //Salva em arquivo utilizando o percurso em ordem para salvar em ordem alfabética
+{
+	if(no == NULL)
+		return;
+	salvarEmArquivo(no->esq, ptarq);
+	fprintf(ptarq, "%s %s\n", no->palavra, no->definicao);
+	salvarEmArquivo(no->dir, ptarq);
+}
+
+/*int maior(int X, int Y) //Usado extrair a altura de um nó
+{
+	return X > Y ? X : Y;
+}*/
+
+/*int alturaNo(ArvAVL A) //Retorna o campo altura de um nó
+{
+	if(A == NULL)
+		return -1;
+	return A->altura;
+}*/
+
+/*int fatorBalNo(ArvAVL A) //calcula o fator de balanceamento de um nó
+{
+	return alturaNo(A->esq) - alturaNo(A->dir);
+}*/
+
+/*void rotacaoLL(ArvAVL *A) //rotacao simples à direita para balancear
+{
+	if(*A == NULL)
+		return;
+	ArvAVL B = (*A)->esq;
+	(*A)->esq = B->dir;
+	B->dir = *A;
+	(*A)->altura = maior(alturaNo((*A)->esq), alturaNo((*A)->dir))+1;
+	B->altura = maior(alturaNo(B->esq), alturaNo(B->dir))+1;
+	*A = B;
+}*/
+
+/*void rotacaoRR(ArvAVL *A) //rotacao simples à esquerda para balancear
+{
+	if(*A == NULL)
+		return;
+	ArvAVL B = (*A)->dir;
+	(*A)->dir = B->esq;
+	B->esq = *A;
+	(*A)->altura = maior(alturaNo((*A)->esq), alturaNo((*A)->dir))+1;
+	B->altura = maior(alturaNo(B->esq), alturaNo(B->dir))+1;
+	*A = B;
+}*/
+
+/*void rotacaoLR(ArvAVL *A) //rotacao dupla LR (left-right)
+{
+	rotacaoRR(&(*A)->esq);
+	rotacaoLL(A);
+}*/
+
+/*void rotacaoRL(ArvAVL *A) //rotacao dupla RL (right-left)
+{
+	rotacaoLL(&(*A)->dir);
+	rotacaoRR(A);
+}*/
+
+No* avo(No *n)
+{
+	if(n == NULL && n->pai == NULL)
+		return NULL;
+	else
+		return n->pai->pai;
+}
+
+No* tio(No *n)
+{
+	if(n == NULL && n->pai == NULL)
+		return NULL;
+	else{
+		if(avo(n)->esq == n->pai)
+			return avo(n)->dir;
+		else
+			return avo(n)->esq;
+	}
+}
+
+int inserirPalavra(char texto[], char definicao[], No **raiz) //recebe uma palavra e sua definicao como parametro, e a estrutura arvore
+{
+	No *no = (No*)malloc(sizeof(No));
+	if(no == NULL)
+		return 0;
+	strcpy(no->palavra, palavra);
+	strcpy(no->definicao, definicao);
+	no->esq = NULL;
+	no->dir = NULL;
+	no->c = VERMELHO;
+	if((*raiz) == NULL)
+	{
+		no->c = PRETO;
+		(*raiz) = no;
+		return 1;
+	}
+	else{
+		No *p = *raiz, *pai = NULL;
+		while(p != NULL)
+		{
+			pai = p;
+			if(strcmp(texto, n->palavra) < 0)
+			{
+				p = p->esq;
+			}
+			else{
+				if(strcmp(texto, n->palavra) > 0)
+				{
+					p = p->dir;
+				}
+				else
+				{
+					strcpy(p->definicao, definicao);
+					return 1;
+				}
+			}
+		}
+		no->pai = pai;
+		if(strcmp(no->palavra, pai->palavra) <= 0)
+		{
+			pai->esq = no;
+		}
+		else{
+			pai->dir = no;
+		}
+		corrigir(raiz, no);
+	}
+}
+
+int buscarRubro-Negra(char texto[], No **raiz)
+{
+	if((*raiz) == NULL)
+		return 0;
+	No *p = *raiz;
+	while(p != NULL)
+	{
+		pai = p;
+		if(strcmp(texto, p->palavra) < 0)
+		{
+			p = p->esq;
+		}
+		else{
+			if(strcmp(texto, p->palavra) > 0)
+			{
+				p = p->dir;
+			}
+			else{
+				return 1; 
+			}
+		}
+	}
+}
+
+
+/*void removeMax(ArvAVL *A, char palavra[], char definicao[]) //caso a palavra que quero remover tenha dois filhos, uso a função removeMax para trazer a informacao do nó mais a direita
+{														//da subarvore esquerda, tem dois vetores de char como parametro e modifica-os realizando copia do meu nó mais a direita no conteudo desses dois vetores
+	if(*A == NULL)										//a palavra e a descricao respectivamente
+		return;
+	while((*A)->dir != NULL)
+	{
+		A = &(*A)->dir;
+	}
+	strcpy(palavra, (*A)->palavra);
+	strcpy(definicao, (*A)->definicao);
+	ArvAVL B = (*A)->esq;
+	free(*A);
+	*A = B;
+}*/
+
+/*int removePalavra(char texto[], ArvAVL *A) //Percorre a estrutura arvore recebendo uma palavra como parametro e a estrutura arvore
+{
+	if(*A == NULL)
+		return 0;
+	if((strcmp(texto, (*A)->palavra)) == 0) //compara para saber se a palavra do meu nó da arvore é a que estou procurando para remover
+	{
+		if((*A)->esq == NULL && (*A)->dir == NULL) //verifica se pode somente liberar a memória
+		{
+			free(*A);
+			*A = NULL;
+		}
+		else{
+			if((*A)->esq == NULL && (*A)->dir != NULL) //Traz o filho a direita para substituir a palavra a ser removida
+			{
+				ArvAVL B = (*A)->dir;
+				free(*A);
+				*A = B;
+			}
+			else{
+				if((*A)->esq != NULL && (*A)->dir == NULL) //Traz o filho a esquerda para substituir a palavra a ser removida
+				{
+					ArvAVL B = (*A)->esq;
+					free(*A);
+					*A = B;
+				}
+				else{
+					if((*A)->esq != NULL && (*A)->dir != NULL) //remove o nó mais a direita da subarvore esquerda e o torna o substituto da palavra, trazendo o conteúdo do nó para onde realizei a remoção
+					{
+						char palavraRetornada[TAM_PALAVRA], definicaoRetornada[TAM_DEFINICAO];
+						removeMax(&(*A)->esq, palavraRetornada, definicaoRetornada);
+						strcpy((*A)->palavra, palavraRetornada);
+						strcpy((*A)->definicao, definicaoRetornada);
+					}
+				}
+			}
+		}
+		return 1;
+	}
+	else{
+		if(strcmp(texto, (*A)->palavra) < 0) //Utiliza o retorno da função strcmp() para saber qual lado da árvore a função vai percorrer
+			removePalavra(texto, &(*A)->esq);
+		else
+			removePalavra(texto, &(*A)->dir);
+	}
+	if(*A != NULL)
+		(*A)->altura = maior(alturaNo((*A)->esq), alturaNo((*A)->dir))+1; //nova altura do nó após a operação de remoção
+	if(fatorBalNo(*A) > 1) //verificacao do fator de balanceamento, mesmas verificacoes e rotacoes (se necessárias) da função de inserção
+	{
+		if(fatorBalNo((*A)->esq) >= 0)
+			rotacaoLL(A);
+		else
+			rotacaoLR(A);
+	}
+	else{
+		if(fatorBalNo(*A) < -1)
+		{
+			if(fatorBalNo((*A)->dir) <= 0)
+				rotacaoRR(A);
+			else
+				rotacaoRL(A);
+		}
+	}
+}
+
+void destroiArvore(ArvAVL *A) //Percorre uma estrutura árvore liberando a memória dos nós alocados
+{
+	if(*A == NULL)
+		return;
+	destroiArvore(&(*A)->esq);
+	destroiArvore(&(*A)->dir);
+	free(*A);
+	*A = NULL;
+}*/
+
+void carregarEmArquivo(ArvAVL *A, FILE *ptr) //carrega em arquivo utilizando a função fgets e uma string linha para separar a palavra da definicao
+{
+	if(A == NULL)
+		return;
+	char linha[TAM_PALAVRA+TAM_DEFINICAO+2];
+	while(fgets(linha, TAM_PALAVRA+TAM_DEFINICAO+2, ptr))
+	{
+		char palavra[TAM_PALAVRA], definicao[TAM_DEFINICAO];
+		int i=0, k=0;
+		while(linha[i] != ' ')
+		{
+			palavra[i] = linha[i];
+			i+=1;
+		}
+		palavra[strcspn(palavra, "\n")] = 0;
+		palavra[i] = '\0';
+		i+=1;
+		while(linha[i] != '\n')
+		{
+			definicao[k] = linha[i];
+			k+=1;
+			i+=1;
+		}
+		definicao[strcspn(definicao, "\n")] = 0;
+		definicao[k] = '\0';
+		inserirPalavra(palavra, definicao, A); //após construir as strings palavra e definicao realiza inserção na arvore
+	}
+}
+
+/*int buscaPalavra(char texto[], ArvAVL A) //Percorre a arvore buscando uma palavra, retorna 1 se for encontrada e 0 caso o contrário
+{
+	if(A == NULL)
+		return 0;
+	if(strcmp(texto, A->palavra) == 0)
+		return 1;
+	else{
+		if(strcmp(texto, A->palavra) < 0)
+			buscaPalavra(texto, A->esq);
+		else
+			buscaPalavra(texto, A->dir);
+	}
+}*/
+
+void percursoEmordem(ArvAVL A) //Percurso em ordem, imprime o dicionario em ordem alfabetica
+{
+	if(A == NULL)
+		return;
+	percursoEmordem(A->esq);
+	printf("%s: %s\n", A->palavra, A->definicao);
+	percursoEmordem(A->dir);
+}
+
+void percursopreordem(No A)
+{
+	if(A == NULL)
+		return;
+	printf("%s: %s\n", A->palavra, A->definicao);
+	percursopreordem(A->esq);
+	percursopreordem(A->dir);
+}
+
+int main()
+{
+
+    ArvAVL R = NULL;
+    FILE *f;
+    
+
+    // Se não houver arquivo, inicializa com casos de teste
+	/*Apa
+	inserePalavra("Algoritmo", "Conjunto de instrucoes passo a passo para resolver um problema.", &R);
+    inserePalavra("Compilador", "Programa que traduz codigo fonte em linguagem de maquina.", &R);
+    inserePalavra("Estrutura", "Organizacao logica de dados em memoria.", &R);
+    inserePalavra("Funcao", "Bloco de codigo reutilizavel que executa uma tarefa especifica.", &R);
+    inserePalavra("Variavel", "Espaco nomeado para armazenar um valor em memoria.", &R);
+    inserePalavra("Ponteiro", "Variavel que armazena o endereço de outra variavel.", &R);
+    inserePalavra("Recursao", "Tecnica em que uma função chama a si mesma.", &R);*/
+    
+    inserirPalavra("Algoritmo", "Conjunto de instrucoes passo a passo para resolver um problema.", &R);
+    inserirPalavra("Compilador", "Programa que traduz codigo fonte em linguagem de maquina.", &R);
+    inserirPalavra("Estrutura", "Organização logica de dados em memoria.", &R);
+    inserirPalavra("Funcao", "Bloco de codigo reutilizavel que executa uma tarefa especifica.", &R);
+    inserirPalavra("Variavel", "Espaco nomeado para armazenar um valor em memoria.", &R);
+    inserirPalavra("Ponteiro", "Variavel que armazena o endereco de outra variavel.", &R);
+    inserirPalavra("Recursao", "Tecnica em que uma funcao chama a si mesma.", &R);
+    inserirPalavra("Biblioteca", "Colecao de funcoes e rotinas reutilizaveis.", &R);
+    inserirPalavra("Compilacao", "Processo de traducao de codigo fonte para executavel.", &R);
+    inserirPalavra("Depuracao", "Tecnica de identificar e corrigir erros no codigo.", &R);
+    inserirPalavra("Encapsulamento", "Ocultacao de detalhes internos de uma classe.", &R);
+    inserirPalavra("Heranca", "Mecanismo de reutilizacao de codigo entre classes.", &R);
+    inserirPalavra("Interface", "Definicao de um conjunto de metodos a serem implementados.", &R);
+    inserirPalavra("Polimorfismo", "Capacidade de um objeto assumir diferentes formas.", &R);
+    inserirPalavra("Objeto", "Instancia de uma classe que contem atributos e metodos.", &R);
+    inserirPalavra("Classe", "Modelo para criacao de objetos em programacao orientada a objetos.", &R);
+    inserirPalavra("Vetor", "Estrutura de dados indexada de tamanho fixo.", &R);
+    inserirPalavra("Fila", "Estrutura de dados do tipo FIFO.", &R);
+    inserirPalavra("Pilha", "Estrutura de dados do tipo LIFO.", &R);
+    inserirPalavra("Arvore", "Estrutura hierarquica composta por nos conectados.", &R);
+
+	int op;
+	char palavra[TAM_PALAVRA], definicao[TAM_DEFINICAO];
+    do {
+        printf("\n==== DICIONARIO ===\n");
+        printf("1. Inserir palavra\n");
+        printf("2. Buscar palavra\n");
+        printf("3. Remover palavra\n");
+        printf("4. Mostrar em ordem\n");
+        printf("5. Salvar em arquivo\n");
+        printf("6. Carregar de arquivo\n");
+        printf("0. Sair\n");
+        printf("Escolha: ");
+        scanf("%d", &op);
+        getchar();
+        if(op == 1)
+        {
+        	printf("Palavra: "); 
+			fgets(palavra, TAM_PALAVRA, stdin);
+			palavra[strcspn(palavra, "\n")] = 0;
+            printf("Definição: "); 
+			fgets(definicao, TAM_DEFINICAO, stdin); 
+			definicao[strcspn(definicao, "\n")] = 0;
+            inserirPalavra(palavra, definicao, &R);
+		}
+		else{
+			if(op == 2)
+			{
+				printf("Palavra: ");
+            	fgets(palavra, TAM_PALAVRA, stdin);
+            	palavra[strcspn(palavra, "\n")] = 0;
+            	if(buscaPalavra(palavra, R))
+            		printf("Palavra encontrada: %s\n", palavra);
+            	else
+            		printf("Palavra nao foi encontrada: %s\n", palavra);
+			}
+			else{
+				if(op == 3)
+				{
+					printf("Palavra: ");
+					fgets(palavra, TAM_PALAVRA, stdin);
+					palavra[strcspn(palavra, "\n")] = 0;
+					removePalavra(palavra, &R);
+				}
+				else{
+					if(op == 4)
+					{
+						percursoEmordem(R);
+					}
+					else{
+						if(op == 5)
+						{
+							f = fopen("dicionario.txt", "w");
+			            	if(f)
+			            	{
+			            		salvarEmArquivo(R, f);
+			            		fclose(f);
+			            		printf("Dicionario salvo.\n");
+							}
+						}
+						else{
+							if(op == 6)
+							{
+								destroiArvore(&R);
+								R = NULL;
+								f = fopen("dicionario.txt", "r");
+								carregarEmArquivo(&R, f);
+								fclose(f);
+							}
+						}
+					}
+				}
+			}
+		}
+    } while(op != 0);
+
+    return 0;
+}
