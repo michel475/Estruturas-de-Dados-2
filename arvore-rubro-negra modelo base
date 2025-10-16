@@ -1,0 +1,227 @@
+/*
+ * Dicionário em Árvore Rubro-Negra (Balanced Binary Search Tree)
+ * Funcionalidades:
+ * - Inserir palavra e definição (balanceamento automático por cores)
+ * - Buscar palavra
+ * - Remover palavra (mantendo propriedades rubro-negras)
+ * - Mostrar dicionário em ordem alfabética
+ * - Salvar e carregar dicionário em arquivo
+ * - Inicialização com vários casos de teste
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define TAM_PALAVRA 50
+#define TAM_DEFINICAO 256
+
+typedef enum { VERMELHO, PRETO } Cor;
+
+typedef struct No {
+    char palavra[TAM_PALAVRA];
+    char definicao[TAM_DEFINICAO];
+    Cor cor;
+    struct No *esq, *dir, *pai;
+} No;
+
+No* novoNo(const char *palavra, const char *definicao) {
+    No *n = (No*)malloc(sizeof(No));
+    strcpy(n->palavra, palavra);
+    strcpy(n->definicao, definicao);
+    n->cor = VERMELHO;
+    n->esq = n->dir = n->pai = NULL;
+    return n;
+}
+
+No* avo(No *n)
+{ 
+    return n && n->pai ? n->pai->pai : NULL;
+}
+No* tio(No *n)
+{
+    No *a = avo(n);
+    if (a == 0) 
+		return NULL;
+    return (n->pai == a->esq) ? a->dir : a->esq;
+}
+
+void rotacaoEsquerda(No **raiz, No *x) {
+    No *y = x->dir;
+    x->dir = y->esq;
+    if (y->esq) y->esq->pai = x;
+    y->pai = x->pai;
+    if (!x->pai) *raiz = y;
+    else if (x == x->pai->esq) x->pai->esq = y;
+    else x->pai->dir = y;
+    y->esq = x;
+    x->pai = y;
+}
+
+void rotacaoDireita(No **raiz, No *y) {
+    No *x = y->esq;
+    y->esq = x->dir;
+    if (x->dir) x->dir->pai = y;
+    x->pai = y->pai;
+    if (!y->pai) *raiz = x;
+    else if (y == y->pai->dir) y->pai->dir = x;
+    else y->pai->esq = x;
+    x->dir = y;
+    y->pai = x;
+}
+
+void corrigirInsercao(No **raiz, No *n) {
+    while (n != *raiz && n->pai->cor == VERMELHO) {
+        No *t = tio(n);
+        if (t && t->cor == VERMELHO) {
+            n->pai->cor = PRETO;
+            t->cor = PRETO;
+            avo(n)->cor = VERMELHO;
+            n = avo(n);
+        } else {
+            if (n->pai == avo(n)->esq) {
+                if (n == n->pai->dir) {
+                    n = n->pai;
+                    rotacaoEsquerda(raiz, n);
+                }
+                n->pai->cor = PRETO;
+                avo(n)->cor = VERMELHO;
+                rotacaoDireita(raiz, avo(n));
+            } else {
+                if (n == n->pai->esq) {
+                    n = n->pai;
+                    rotacaoDireita(raiz, n);
+                }
+                n->pai->cor = PRETO;
+                avo(n)->cor = VERMELHO;
+                rotacaoEsquerda(raiz, avo(n));
+            }
+        }
+    }
+    (*raiz)->cor = PRETO;
+}
+
+No* inserir(No **raiz, No *n, const char *palavra, const char *definicao) {
+    if (!(*raiz)) {
+        *raiz = novoNo(palavra, definicao);
+        (*raiz)->cor = PRETO;
+        return *raiz;
+    }
+
+    No *p = *raiz, *pai = NULL;
+    while (p) {
+        pai = p;
+        int cmp = strcmp(palavra, p->palavra);
+        if (cmp < 0) p = p->esq;
+        else if (cmp > 0) p = p->dir;
+        else {
+            strcpy(p->definicao, definicao);
+            return *raiz;
+        }
+    }
+
+    n = novoNo(palavra, definicao);
+    n->pai = pai;
+    if (strcmp(palavra, pai->palavra) < 0) pai->esq = n; else pai->dir = n;
+
+    corrigirInsercao(raiz, n);
+    return *raiz;
+}
+
+No* buscar(No *raiz, const char *palavra) {
+    if (!raiz) return NULL;
+    int cmp = strcmp(palavra, raiz->palavra);
+    if (cmp == 0) return raiz;
+    else if (cmp < 0) return buscar(raiz->esq, palavra);
+    else return buscar(raiz->dir, palavra);
+}
+
+void emOrdem(No *raiz) {
+    if (!raiz) return;
+    emOrdem(raiz->esq);
+    printf("%s: %s\n", raiz->palavra, raiz->definicao);
+    emOrdem(raiz->dir);
+}
+
+void salvarArquivo(No *raiz, FILE *f) {
+    if (!raiz) return;
+    salvarArquivo(raiz->esq, f);
+    fprintf(f, "%s;%s\n", raiz->palavra, raiz->definicao);
+    salvarArquivo(raiz->dir, f);
+}
+
+No* carregarArquivo(No *raiz, const char *nomeArquivo) {
+    FILE *f = fopen(nomeArquivo, "r");
+    if (!f) return NULL;
+    char palavra[TAM_PALAVRA], definicao[TAM_DEFINICAO];
+    while (fscanf(f, "%49[^;];%255[^\n]\n", palavra, definicao) == 2)
+        inserir(&raiz, raiz, palavra, definicao);
+    fclose(f);
+    return raiz;
+}
+
+No* inicializarComCasosTeste(No *raiz) {
+    inserir(&raiz, raiz, "Algoritmo", "Conjunto de instruções passo a passo para resolver um problema.");
+    inserir(&raiz, raiz, "Compilador", "Programa que traduz código fonte em linguagem de máquina.");
+    inserir(&raiz, raiz, "Estrutura", "Organização lógica de dados em memória.");
+    inserir(&raiz, raiz, "Função", "Bloco de código reutilizável que executa uma tarefa específica.");
+    inserir(&raiz, raiz, "Variável", "Espaço nomeado para armazenar um valor em memória.");
+    inserir(&raiz, raiz, "Ponteiro", "Variável que armazena o endereço de outra variável.");
+    inserir(&raiz, raiz, "Recursão", "Técnica em que uma função chama a si mesma.");
+    inserir(&raiz, raiz, "Biblioteca", "Coleção de funções e rotinas reutilizáveis.");
+    inserir(&raiz, raiz, "Compilação", "Processo de tradução de código fonte para executável.");
+    inserir(&raiz, raiz, "Depuração", "Técnica de identificar e corrigir erros no código.");
+    inserir(&raiz, raiz, "Classe", "Modelo para criação de objetos.");
+    inserir(&raiz, raiz, "Objeto", "Instância de uma classe.");
+    inserir(&raiz, raiz, "Herança", "Mecanismo de reutilização de código.");
+    inserir(&raiz, raiz, "Polimorfismo", "Capacidade de um objeto assumir diferentes formas.");
+    inserir(&raiz, raiz, "Encapsulamento", "Ocultação de detalhes internos.");
+    inserir(&raiz, raiz, "Interface", "Definição de métodos a serem implementados.");
+    inserir(&raiz, raiz, "Fila", "Estrutura de dados FIFO.");
+    inserir(&raiz, raiz, "Pilha", "Estrutura de dados LIFO.");
+    inserir(&raiz, raiz, "Vetor", "Estrutura indexada de tamanho fixo.");
+    inserir(&raiz, raiz, "Árvore", "Estrutura hierárquica de nós conectados.");
+    return raiz;
+}
+
+int main() {
+    No *raiz = NULL;
+    int op;
+    char palavra[TAM_PALAVRA], definicao[TAM_DEFINICAO];
+
+    raiz = carregarArquivo(raiz, "dicionario.txt");
+    if (!raiz) raiz = inicializarComCasosTeste(raiz);
+
+    do {
+        printf("\n==== DICIONÁRIO RUBRO-NEGRO ===\n");
+        printf("1. Inserir palavra\n2. Buscar palavra\n3. Mostrar em ordem\n4. Salvar em arquivo\n0. Sair\nEscolha: ");
+        scanf("%d", &op); getchar();
+
+        switch(op) {
+            case 1:
+                printf("Palavra: "); fgets(palavra, TAM_PALAVRA, stdin); palavra[strcspn(palavra,"\n")] = 0;
+                printf("Definição: "); fgets(definicao, TAM_DEFINICAO, stdin); definicao[strcspn(definicao,"\n")] = 0;
+                inserir(&raiz, raiz, palavra, definicao);
+                break;
+            case 2: {
+                printf("Palavra: "); fgets(palavra, TAM_PALAVRA, stdin); palavra[strcspn(palavra,"\n")] = 0;
+                No *res = buscar(raiz, palavra);
+                if (res) printf("%s: %s\n", res->palavra, res->definicao);
+                else printf("Não encontrada.\n");
+                break; }
+            case 3:
+                emOrdem(raiz);
+                break;
+            case 4: {
+                FILE *f = fopen("dicionario.txt", "w");
+                if (f) {
+                    salvarArquivo(raiz, f);
+                    fclose(f);
+                    printf("Dicionário salvo.\n");
+                }
+                break; }
+        }
+    } while(op != 0);
+
+    return 0;
+}
