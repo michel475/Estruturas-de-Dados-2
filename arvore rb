@@ -1,0 +1,217 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#define PALAVRA 25
+#define DEFINICAO 250
+
+typedef enum{VERMELHO, PRETO} Cor;
+
+typedef struct arvrb{
+	char palavra[PALAVRA], definicao[DEFINICAO];
+	Cor cor;
+	struct arvrb *esq;
+	struct arvrb *dir;
+	struct arvrb *pai;
+} *ArvRB;
+
+ArvRB avo(ArvRB no)
+{
+	if(no == NULL || no->pai == NULL)
+		return NULL;
+	else
+		return no->pai->pai;
+}
+
+ArvRB tio(ArvRB no)
+{
+	if(no == NULL || avo(no) == NULL)
+		return NULL;
+	else{
+		if(no->pai == avo(no)->esq)
+			return avo(no)->dir;
+		else
+			return avo(no)->esq;
+	}
+}
+
+void rotacaoesquerda(ArvRB *A, ArvRB B)
+{
+	ArvRB y = B->dir;
+	B->dir = y->esq;
+	if()
+}
+
+void corrigirinsercao(ArvRB *A, ArvRB no)
+{
+	while(no != *A && no->pai->cor == VERMELHO)
+	{
+		ArvRB t = tio(no);
+		if(t != NULL && t->cor == VERMELHO)
+		{
+			no->pai->cor = PRETO;
+			t->cor = PRETO;
+			avo(no)->cor = VERMELHO;
+			no = avo(no);
+		}
+		else{
+			if(no->pai == avo(no)->esq)
+			{
+				if(no == no->pai->dir)
+				{
+					no = no->pai;
+					rotacaoesquerda(A, no);
+				}
+				no->pai->cor = PRETO;
+				avo(no)->cor = VERMELHO;
+				rotacaodireita(A, avo(no));
+			}
+			else{
+				if(no->pai == avo(no)->dir)
+				{
+					if(no == no->pai->esq)
+					{
+						no = no->pai;
+						rotacaodireita(A, no);
+					}
+					no->pai = PRETO;
+					avo(no)->cor = VERMELHO;
+					rotacaoesquerda(A, avo(no));
+				}
+			}
+		}
+	}
+	(*A)->cor = PRETO;
+}
+
+int insereRB(char p[], char d[], ArvRB *A)
+{
+	ArvRB no = (ArvRB)malloc(sizeof(struct arvrb));
+	if(no == NULL)
+		return 0;
+	strcpy(no->palavra, p);
+	strcpy(no->definicao, d);
+	no->esq = no->dir = no->pai = NULL;
+	no->cor = VERMELHO;
+	if(A == NULL)
+		return 0;
+	if(*A == NULL)
+	{
+		no->cor = PRETO;
+		*A = no;
+		return 1;
+	}
+	else{
+		ArvRB p, pai;
+		while(p != NULL)
+		{
+			pai = p;
+			if(strcmp(p, p->palavra) < 0)
+			{
+				p = p->esq;
+			}
+			else{
+				if(strcmp(p, p->palavra) > 0)
+				{
+					p = p->dir;
+				}
+				else{
+					strcpy(p->definicao, d);
+				}
+			}
+		}
+		no->pai = pai;
+		if(strcmp(p, pai->palavra) < 0)
+		{
+			pai->esq = no;
+		}
+		else{
+			pai->dir = no;
+		}
+		
+		corrigirinsercao(A, no);
+	}
+}
+
+void emordem(ArvRB A)
+{
+	if(A == NULL)
+		return;
+	emordem(A->esq);
+	printf("%s %s\n", A->palavra, A->definicao);
+	emordem(A->dir);
+}
+
+void preordem(ArvRB A)
+{
+	if(A == NULL)
+		return;
+	printf("%s %s\n", A->palavra, A->definicao);
+	preordem(A->esq);
+	preordem(A->dir);
+}
+
+void posordem(ArvRB A)
+{
+	if(A == NULL)
+		return;
+	posordem(A->esq);
+	posordem(A->dir);
+	printf("%s %s\n", A->palavra, A->definicao);
+}
+
+void carregarArquivo(ArvRB *A, FILE *ptr)
+{
+	if(ptr == NULL)
+		return;
+	while(!feof(ptr))
+	{
+		char linha[PALAVRA+DEFINICAO+2];
+		char palavra[PALAVRA], definicao[DEFINICAO];
+		int i=0, k=0;
+		fgets(linha, PALAVRA+DEFINICAO+2, ptr);
+		while(!isspace(linha[i]))
+		{
+			palavra[i] = linha[i];
+			i++;
+		}
+		palavra[i] = '\0';
+		palavra[strcspn(palavra, "\n")] = 0;
+		i+=1;
+		while(linha[i] != '\n')
+		{
+			definicao[k++] = linha[i++];
+		}
+		definicao[k] = '\0';
+		definicao[strcspn(definicao, "\n")] = 0;
+		insereRB(palavra, definicao, A);
+	}
+}
+
+void salvarArquivo(ArvRB A, FILE *ptr)
+{
+	if(A == NULL)
+		return;
+	salvarArquivo(A->esq, ptr);
+	fprintf(ptr, "%s %s\n", A->palavra, A->definicao);
+	salvarArquivo(A->dir, ptr);
+}
+
+int buscaRB(ArvRB A, char p[])
+{
+	if(A == NULL)
+		return 0;
+	if(strcmp(p, A->palavra) == 0)
+		return 1;
+	else{
+		if(strcmp(p, A->palavra) < 0)
+			return buscaRB(A->esq, p);
+		else
+			return buscaRB(A->dir, p);
+	}
+}
+
+int main()
+{
+	ArvRB R = NULL;
+}
