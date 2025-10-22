@@ -1,0 +1,368 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#define PALAVRA 20
+#define DEFINICAO 250
+
+typedef enum{VERMELHO, PRETO} Cor;
+
+typedef struct no{
+	char palavra[PALAVRA], definicao[DEFINICAO];
+	Cor cor;
+	struct no *pai;
+	struct no *esq;
+	struct no *dir;
+}No;
+
+No* avo(No* no)
+{
+	if(no == NULL || no->pai == NULL)
+		return NULL;
+	else
+		return no->pai->pai;
+}
+
+No* tio(No *no)
+{
+	No *vo = avo(no);
+	if(no == NULL || vo == NULL)
+		return NULL;
+	return no->pai == vo->esq ? vo->dir : vo->esq;
+}
+
+void rotacaoesquerda(No **raiz, No *no)
+{
+	No *aux = no->dir;
+	no->dir = aux->esq;
+	if(aux->esq != NULL)
+	{
+		aux->esq->pai = no;
+	}
+	aux->pai = no->pai;
+	if(no->pai == NULL)
+	{
+		*raiz = aux;
+	}
+	else{
+		if(no == no->pai->esq)
+		{
+			no->pai->esq = aux;
+		}
+		else{
+			no->pai->dir = aux;
+		}
+	}
+	aux->esq = no;
+	no->pai = aux;
+}
+
+void rotacaodireita(No **raiz, No *no)
+{
+	No *aux = no->esq;
+	no->esq = aux->dir;
+	if(aux->dir != NULL)
+	{
+		aux->dir->pai = no;
+	}
+	aux->pai = no->pai;
+	if(no->pai == NULL)
+	{
+		*raiz = aux;
+	}
+	else{
+		if(no == no->pai->dir)
+		{
+			no->pai->dir = aux;
+		}
+		else{
+			no->pai->esq = aux;
+		}
+	}
+	aux->dir = no;
+	no->pai = aux;
+}
+
+void corrigirinsercao(No **raiz, No *no)
+{
+	while(no != *raiz && no->pai->cor == VERMELHO)
+	{
+		No *t = tio(no);
+		if(t != NULL && t->cor == VERMELHO)
+		{
+			no->pai->cor = t->cor = PRETO;
+			avo(no)->cor = VERMELHO;
+			no = avo(no);
+		}
+		else{
+			if(no->pai == avo(no)->esq)
+			{
+				if(no == no->pai->dir)
+				{
+					no = no->pai;
+					rotacaoesquerda(raiz, no);
+				}
+				no->pai->cor = PRETO;
+				avo(no)->cor = VERMELHO;
+				rotacaodireita(raiz, avo(no));
+			}
+			else{
+				if(no->pai == avo(no)->dir)
+				{
+					if(no == no->pai->esq)
+					{
+						no = no->pai;
+						rotacaodireita(raiz, no);
+					}
+					no->pai->cor = PRETO;
+					avo(no)->cor = VERMELHO;
+					rotacaoesquerda(raiz, avo(no));
+				}
+			}
+		}
+	}
+	(*raiz)->cor = PRETO;
+}
+
+void removemax(No *no, char p[], char d[])
+{
+	if(no == NULL)
+		return;
+	while(no->dir != NULL)
+		no = no->dir;
+	strcpy(p, no->palavra);
+	strcpy(d, no->definicao);
+	No *auxiliar = no->esq;
+	free(no);
+	no = auxiliar;
+}
+
+No* removeNo(No **raiz, char p[])
+{
+	No* aux = *raiz;
+	if(strcmp(p, aux->palavra) == 0)
+	{
+		if(*raiz == aux)
+		{
+			//solução caso seja igual à raiz
+		}
+		else{
+			if(aux->cor == VERMELHO)
+			{
+				if(aux->esq == NULL && aux->dir == NULL)
+				{
+					free(aux);
+					aux = NULL;
+				}
+				else{
+					if(aux->esq == NULL && aux->dir != NULL)
+					{
+						No *ax = aux->dir;
+						free(aux);
+						aux = ax;
+					}
+					else{
+						if(aux->esq != NULL && aux->dir == NULL)
+						{
+							No *ax = aux->esq;
+							free(aux);
+							aux = ax;
+						}
+						else{
+							if(aux->esq != NULL && aux->dir != NULL)
+							{
+								char word[PALAVRA], def[DEFINICAO];
+								removemax(aux->esq, word, def);
+								strcpy(aux->palavra, word);
+								strcpy(aux->definicao, def);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+int removerRB(No **raiz, char p[])
+{
+	if(*raiz == NULL)
+		return 0;
+	if(buscarRB(raiz, p))
+	{
+		removeNo(raiz, char p[]);
+		return 1;
+	}
+	else{
+		return 0;
+	}
+}
+
+No* inserirRB(No **raiz, char p[], char d[])
+{
+	if(*raiz == NULL)
+	{
+		No *no = (No*)malloc(sizeof(No));
+		if(no == NULL)
+			return NULL;
+		strcpy(no->palavra, p);
+		strcpy(no->definicao, d);
+		no->esq = no->dir = no->pai = NULL;
+		no->cor = PRETO;
+		*raiz = no;
+		return *raiz;
+	}
+	else{
+		No *aux = *raiz, *pai = NULL;
+		while(aux != NULL)
+		{
+			pai = aux;
+			if(strcmp(p, aux->palavra) < 0)
+				aux = aux->esq;
+			else{
+				if(strcmp(p, aux->palavra) > 0)
+					aux = aux->dir;
+				else{
+					strcpy(aux->definicao, d);
+					return *raiz;
+				}
+			}
+		}
+		No *no = (No*)malloc(sizeof(No));
+		if(no == NULL)
+			return NULL;
+		no->pai = pai;
+		no->cor = VERMELHO;
+		no->esq = no->dir = NULL;
+		strcpy(no->palavra, p);
+		strcpy(no->definicao, d);
+		if(strcmp(no->palavra, pai->palavra) < 0)
+			no->pai->esq = no;
+		else
+			no->pai->dir = no;
+		corrigirinsercao(raiz, no);
+		return *raiz;
+	}
+}
+
+void emordem(No *no)
+{
+	if(no == NULL)
+		return;
+	emordem(no->esq);
+	printf("%s %s\n", no->palavra, no->definicao);
+	emordem(no->dir);
+}
+
+void salvarArquivo(No *no, FILE *ptr)
+{
+	if(no == NULL)
+		return;
+	salvarArquivo(no->esq, ptr);
+	fprintf(ptr, "%s %s\n", no->palavra, no->definicao);
+	salvarArquivo(no->dir, ptr);
+}
+
+No* buscarRB(No *no, char p[])
+{
+	if(no == NULL)
+		return NULL;
+	if(strcmp(p, no->palavra) == 0)
+		return no;
+	else{
+		if(strcmp(p, no->palavra) < 0)
+			return buscarRB(no->esq, p);
+		else
+			return buscarRB(no->dir, p);
+	}
+}
+
+void carregarArquivo(No **raiz, FILE *ptr)
+{
+	if(ptr == NULL)
+		return;
+	while(!feof(ptr))
+	{
+		char linha[PALAVRA+DEFINICAO+2], palavra[PALAVRA], definicao[DEFINICAO];
+		int i=0, k=0;
+		fgets(linha, PALAVRA+DEFINICAO+2, ptr);
+		while(linha[i] != ' ')
+		{
+			palavra[i] = linha[i];
+			i++;
+		}
+		palavra[i] = '\0';
+		palavra[strcspn(palavra, "\n")] = 0;
+		i+=1;
+		while(linha[i] != '\n')
+		{
+			definicao[k] = linha[i];
+			k++;
+			i++;
+		}
+		definicao[k] = '\0';
+		definicao[strcspn(definicao, "\n")] = 0;
+		inserirRB(raiz, palavra, definicao);
+	}
+}
+
+void menu()
+{
+	printf("\n======= DICIONARIO =======\n");
+	printf("1 - inserir\n");
+	printf("2 - buscar\n");
+	printf("3 - imprimir em ordem\n");
+	printf("4 - salvar em arquivo\n");
+	printf("0 - sair\n");
+	printf("Opcao: ");
+}
+
+int main(){
+	No *raiz = NULL;
+    int op;
+    char palavra[PALAVRA], definicao[DEFINICAO];
+    FILE *ptr = fopen("dicionario.txt", "r");
+    carregarArquivo(&raiz, ptr);
+    fclose(ptr);
+
+    do {
+        menu();
+        scanf("%d", &op);
+        getchar();
+
+        switch(op) {
+            case 1:
+                printf("Digite a palavra: ");
+				fgets(palavra, PALAVRA, stdin);
+				palavra[strcspn(palavra,"\n")] = 0;
+                printf("Digite a definição: ");
+				fgets(definicao, DEFINICAO, stdin);
+				definicao[strcspn(definicao,"\n")] = 0;
+                inserirRB(&raiz, palavra, definicao);
+                break;
+            case 2: {
+                printf("Palavra: ");
+				fgets(palavra, PALAVRA, stdin);
+				palavra[strcspn(palavra,"\n")] = 0;
+                No *buscado = buscarRB(raiz, palavra);
+                if(buscado)
+					printf("%s: %s\n", buscado->palavra, buscado->definicao);
+                else
+					printf("Não encontrada.\n");
+                break; }
+            case 3:
+                emordem(raiz);
+                break;
+            case 4: {
+                FILE *f = fopen("dicionario.txt", "w");
+                if(f != NULL)
+				{
+                    salvarArquivo(raiz, f);
+                    fclose(f);
+                    printf("Dicionário salvo.\n");
+                }
+                break; }
+        }
+    } while(op != 0);
+
+    return 0;
+}
