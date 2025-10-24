@@ -1,0 +1,84 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+
+struct aluno{
+	char nome[20];
+	int matricula;
+	float n1,n2,n3,n4,mf;
+};
+
+typedef struct no{
+	struct aluno Aluno;
+}No;
+
+struct hash{
+	int qtd, TABLE_SIZE;
+	No **itens;
+};
+
+typedef struct hash Hash;
+
+Hash* criartabela(int TABLE_SIZE)
+{
+	Hash *ha = (Hash*)malloc(sizeof(Hash));
+	if(ha != NULL)
+	{
+		int i;
+		ha->TABLE_SIZE = TABLE_SIZE;
+		ha->itens = (No**)malloc(TABLE_SIZE * sizeof(No*));
+		if(ha->itens == NULL)
+		{
+			free(ha);
+			return NULL;
+		}
+		ha->qtd = 0;
+		for(i=0; i < TABLE_SIZE; i++)
+		{
+			ha->itens[i] = NULL;
+		}
+	}
+	return ha;
+}
+
+int hashing(int chave, int TABLE_SIZE)
+{
+	return abs(chave) % TABLE_SIZE;
+}
+
+int inserir(Hash *ha, struct aluno a1)
+{
+	if(ha == NULL)
+		return 0;
+	int pos = hashing(a1.matricula, ha->TABLE_SIZE);
+	No* novo = (No*)malloc(sizeof(No));
+	if(novo == NULL)
+		return 0;
+	novo->Aluno = a1;
+	ha->itens[pos] = novo;
+	ha->qtd += 1;
+	return 1;
+}
+
+int valorString(char str[], int TABLE_SIZE)
+{
+	float valor = 0.659;
+}
+
+int buscaElemento(Hash *ha, int chave)
+{
+	int posicao = hashing(chave, ha->TABLE_SIZE);
+	return posicao;
+}
+
+int main()
+{
+	Hash *ha = criartabela(11);
+	struct aluno a1 = {"michel", 4, 0, 0, 0, 0, 0};
+	inserir(ha, a1);
+	No *no;
+	int pos = buscaElemento(ha, 4);
+	no = ha->itens[pos];
+	printf("%d", no->Aluno.nome);
+}
