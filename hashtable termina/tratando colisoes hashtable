@@ -1,0 +1,86 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+struct pessoa{
+	int id;
+	char nome[10];
+};
+
+typedef struct no{
+	struct pessoa p;
+	struct no *prox;
+}No;
+
+
+typedef struct lista{
+	No *inicio;
+	int qtd;
+}Lista;
+
+
+struct hash{
+	int qtd, table_size;
+	Lista **itens;
+};
+
+typedef struct hash Hash;
+
+Hash* criarTabela(int tam)
+{
+	Hash *ha = (Hash*)malloc(sizeof(Hash));
+	if(ha != NULL)
+	{
+		ha->qtd = 0;
+		ha->table_size = tam;
+		ha->itens = (Lista**)malloc(tam * sizeof(Lista*));
+		int i;
+		for(i=0; i<tam; i++)
+			ha->itens[i] = NULL;
+	}
+	return ha;
+}
+
+int funcaohashing(int chave, int tam)
+{
+	return (chave & 0x7FFFFFFF) % tam;
+}
+
+int verificaColisao(int chave, Hash *ha)
+{
+	int indice = funcaohashing(chave, ha->table_size);
+	if(ha->itens[indice]->inicio == NULL)
+		return 0;
+	else
+		return 1;
+}
+
+int inserir(Hash *ha, struct pessoa p)
+{
+	if(ha == NULL)
+		return 0;
+	Lista *li = (Lista*)malloc(sizeof(Lista));
+	if(li == NULL)
+		return 0;
+	li->inicio->p = p;
+	li->inicio->prox = NULL;
+	int index = funcaohashing(p.id, ha->table_size);
+	if(verificaColisao(p.id, ha->table_size))
+	{
+		No *aux = ha->itens[index]->inicio;
+		while(aux->prox != NULL)
+			aux = aux->prox;
+		aux->prox = li;
+		ha->itens->qtd+=1;
+	}
+	else{
+		ha->itens[index]->inicio = li;
+		ha->itens->qtd+=1;
+	}
+	
+	return 1;
+}
+
+int main()
+{
+	
+}
