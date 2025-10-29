@@ -3,25 +3,28 @@
 #include <string.h>
 #define NOME 30
 
-struct aluno{
+struct aluno{ //Estrutura aluno
 	char nome[NOME];
 	int matricula;
 	float n1,n2,n3,n4;
 	float media;
 };
 
-typedef struct no{
+typedef struct no{ //Declaração do tipo nó para a estrutura aluno
 	struct aluno a;
+	struct no *prox;
 }No;
 
-struct hash{
-	int qtd;
-	int TAM_TABELA;
-	No **itens;
+struct hash{ //TAD da tabela com o campo qtd, TAM_TABELA e **itens
+	int qtd; //Quantidade de elementos da tabela
+	int TAM_TABELA; //Capacidade máxima de elementos da tabela
+	No **itens; //Ponteiro de ponteiros do tipo nó, será usado para guardar cada elemento da tabela
 };
 
 typedef struct hash Hash;
 
+//A função tabela aloca memória para uma estrutura do tipo Hash
+//realiza as devidas inicializações, quantidade sendo 0 e TAM_TABELA sendo o inteiro passado por parâmetro
 Hash* criarTabela(int tamanho_tabela)
 {
 	Hash *ha = (Hash*)malloc(sizeof(Hash));
@@ -30,56 +33,59 @@ Hash* criarTabela(int tamanho_tabela)
 		int i;
 		ha->qtd = 0;
 		ha->TAM_TABELA = tamanho_tabela;
-		ha->itens = (No**)malloc(tamanho_tabela * sizeof(No*));
+		ha->itens = (No**)malloc(tamanho_tabela * sizeof(No*)); //Aloca a memória para o campo itens e todos os ponteiros da tabela
 		for(i=0; i<tamanho_tabela; i++)
 		{
-			ha->itens[i] = NULL;
+			ha->itens[i] = NULL; //inicializa como NULL cada índice para representar a ausência de valor (criando uma tabela vazia)
 		}
 	}
 	
 	return ha;
 }
-
+//A função funcaoHashing() recebe como parâemtro um inteiro chave 
+//e um inteiro tamanho_tabela representando o dado que será usado
+//como cálculo para identificar a posição do tipo aluno na tabela
+//e a quantidade máxima de elementos da tabela respectivamente.
 int funcaoHashing(int chave, int tamanho_tabela)
 {
-	return (chave & 0x7FFFFFFF) % tamanho_tabela;
-}
+	return (chave & 0x7FFFFFFF) % tamanho_tabela; //Compara o valor da chave bit-a-bit (operação bitwise E (AND)) para tirar o sinal do número em caso de número negativo
+}												//extrai o módulo da divisão da chave com o tamanho da tabela e retorna o resultado, que seria o índice do elemento com aquela chave na tabela
 
 int inserirSemColisao(struct aluno a, Hash *ha)
 {
 	if(ha == NULL)
 		return 0;
-	No *no = (No*)malloc(sizeof(No));
-	a.n1 = a.n2 = a.n3 = a.n4 = a.media = 0;
+	No *no = (No*)malloc(sizeof(No)); //Aloca memória para um novo nó na tabela
+	a.n1 = a.n2 = a.n3 = a.n4 = a.media = 0; //inicializa a estrutura aluno com as notas 0
 	if(no == NULL)
 		return 0;
 	no->a = a;
-	int indice = funcaoHashing(no->a.matricula, ha->TAM_TABELA);
-	ha->itens[indice] = no;
-	ha->qtd+=1;
+	int indice = funcaoHashing(no->a.matricula, ha->TAM_TABELA); //chama a função funcaoHashing() para pegar o índice de inserção do novo aluno
+	ha->itens[indice] = no; //insere o nó alocado no índice retornado
+	ha->qtd+=1; //incrementa a quantidade de elementos
 	
-	return 1;
+	return 1; //retorna 1
 }
 
-int buscaTabela(Hash *ha, int chave)
+int buscaTabela(Hash *ha, int chave) //A função buscaTabela() chama realiza o cálculo do índice baseado na chave passada por parâmetro
 {
 	int idx = (chave & 0x7FFFFFFF) % ha->TAM_TABELA;
-	int aux = ha->itens[idx]->a.matricula;
-	if(aux != chave)
-		return -1;
+	int aux = ha->itens[idx]->a.matricula; //Armazena a chave do elemento que está no índice
+	if(aux != chave) //Valida para saber se as chaves são iguais (no contexto a matrícula do aluno é a chave)
+		return -1; //Se for diferente retorna -1, ou seja, não encontrou o elemento
 	else
-		return idx;
+		return idx; //Se for igual retorna o índice
 }
 
-void destroiTabela(Hash *ha)
+void destroiTabela(Hash *ha) //A função destroiTabela() recebe o endereço de uma estrutura hash e desaloca todos os ponteiros dentro de **itens
 {
 	int i;
 	for(i=0; i < ha->TAM_TABELA; i++)
 	{
 		free(ha->itens[i]);
 	}
-	free(ha->itens);
-	free(ha);
+	free(ha->itens); //libera a tabela itens
+	free(ha); //libera a estrutura hash
 }
 
 int main()
