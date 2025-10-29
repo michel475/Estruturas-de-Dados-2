@@ -56,7 +56,7 @@ int inserirSemColisao(struct aluno a, Hash *ha)
 	if(ha == NULL)
 		return 0;
 	No *no = (No*)malloc(sizeof(No)); //Aloca memória para um novo nó na tabela
-	a.n1 = a.n2 = a.n3 = a.n4 = a.media = 0; //inicializa a estrutura aluno com as notas 0
+	a.n1 = a.n2 = a.n3 = a.n4 = 0.0; //inicializa a estrutura aluno com as notas 0
 	if(no == NULL)
 		return 0;
 	no->a = a;
@@ -117,7 +117,7 @@ int main()
 	struct aluno a24 = {"Suzuya Juuzou", 2323};
 	struct aluno a25 = {"Naoki Urasawa", 2324};
 	
-	printf("Tabela hash CRIADA com 31 posicoes: %d ocupada(s) e %d livre(s).\n\n", ha->qtd, (ha->TAM_TABELA-ha->qtd));
+	printf("Tabela hash CRIADA com 31 posições: %d ocupada(s) e %d livre(s).\n\n", ha->qtd, (ha->TAM_TABELA-ha->qtd));
 	printf("Inserindo 25 alunos na tabela hash...\n");
 	inserirSemColisao(a1, ha);
 	inserirSemColisao(a2, ha);
@@ -144,9 +144,9 @@ int main()
 	inserirSemColisao(a23, ha);
 	inserirSemColisao(a24, ha);
 	inserirSemColisao(a25, ha);
-	printf("Tabela hash com 31 posicoes: %d ocupada(s) e %d livre(s).\n\n", ha->qtd, (ha->TAM_TABELA-ha->qtd));
+	printf("Tabela hash com 31 posições: %d ocupada(s) e %d livre(s).\n\n", ha->qtd, (ha->TAM_TABELA-ha->qtd));
 	
-	printf("Atribuindo as notas e calculando a media...\n\n");
+	printf("Atribuindo as notas e calculando a média...\n\n");
 	
 	int idx1, idx2, idx3, idx4;
 	idx1 = buscaTabela(ha, 2301);
@@ -154,38 +154,44 @@ int main()
 	idx2 = buscaTabela(ha, 2305);
 	idx4 = buscaTabela(ha, 2351);
 	
-	int nota1, nota2, nota3, nota4;
+	float nota1, nota2, nota3, nota4;
 	
-	nota1 = ha->itens[idx2]->a.n1 = 6.0;
-	nota2 = ha->itens[idx2]->a.n2 = 9.0;
-	nota3 = ha->itens[idx2]->a.n3 = 5.0;
-	nota4 = ha->itens[idx2]->a.n4 = 8.0;
-	ha->itens[idx2]->a.media = (nota1+nota2+nota3+nota4)/4;
+	ha->itens[idx2]->a.n1 = 6.0;
+	nota1 = ha->itens[idx2]->a.n1;
+	ha->itens[idx2]->a.n2 = 9.0;
+	nota2 = ha->itens[idx2]->a.n2;
+	ha->itens[idx2]->a.n3 = 5.0;
+	nota3 = ha->itens[idx2]->a.n3;
+	ha->itens[idx2]->a.n4 = 8.0;
+	nota4 = ha->itens[idx2]->a.n4;
+	ha->itens[idx2]->a.media = ((nota1+nota2+nota3+nota4)/4.0);
 	
-	nota1 = ha->itens[idx1]->a.n1 = 9.0;
-	nota2 = ha->itens[idx1]->a.n2 = 8.0;
-	nota3 = ha->itens[idx1]->a.n3 = 9.5;
-	nota4 = ha->itens[idx1]->a.n4 = 10.0;
-	ha->itens[idx1]->a.media = (nota1+nota2+nota3+nota4)/4;
+	ha->itens[idx1]->a.n1 = 9.0;
+	nota1 = ha->itens[idx1]->a.n1;
+	ha->itens[idx1]->a.n2 = 8.0;
+	nota2 = ha->itens[idx1]->a.n2;
+	ha->itens[idx1]->a.n3 = 9.5;
+	nota3 = ha->itens[idx1]->a.n3;
+	ha->itens[idx1]->a.n4 = 10.0;
+	nota4 = ha->itens[idx1]->a.n4;
+	ha->itens[idx1]->a.media = ((nota1+nota2+nota3+nota4)/4.0);
 	
 	printf("Consultando as notas...\n\n");
 	if(idx1 == -1)
-		printf("Matricula 2301 nao encontrada na tabela hash.\n\n");
+		printf("Matrícula 2301 não encontrada na tabela hash.\n\n");
 	else
-		printf("Matricula 2301 na posicao: %d\nNotas: %.1f, %.1f, %.1f, %.1f e MF: %.1f.\n\n", idx1, ha->itens[idx1]->a.n1, ha->itens[idx1]->a.n2, ha->itens[idx1]->a.n3, ha->itens[idx1]->a.n4, ha->itens[idx1]->a.media);
+		printf("Matrícula 2301 na posição %d.\nNotas: %.1f, %.1f, %.1f, %.1f e MF: %.1f\n\n", idx1, ha->itens[idx1]->a.n1, ha->itens[idx1]->a.n2, ha->itens[idx1]->a.n3, ha->itens[idx1]->a.n4, ha->itens[idx1]->a.media);
 	if(idx3 == -1)
-		printf("Matricula 2302 nao encontrada na tabela hash.\n\n");
+		printf("Matrícula 2302 não encontrada na tabela hash.\n\n");
 	else
-		printf("Matricula 2302 na posicao: %d\nNotas: %.1f, %.1f, %.1f, %.1f e MF: %.1f.\n\n", idx3, ha->itens[idx3]->a.n1, ha->itens[idx3]->a.n2, ha->itens[idx3]->a.n3, ha->itens[idx3]->a.n4, ha->itens[idx3]->a.media);
+		printf("Matrícula 2302 na posição %d.\nNotas: %.1f, %.1f, %.1f, %.1f e MF: %.1f\n\n", idx3, ha->itens[idx3]->a.n1, ha->itens[idx3]->a.n2, ha->itens[idx3]->a.n3, ha->itens[idx3]->a.n4, ha->itens[idx3]->a.media);
 	if(idx2 == -1)
-		printf("Matricula 2305 nao encontrada na tabela hash.\n\n");
+		printf("Matrícula 2305 não encontrada na tabela hash.\n\n");
 	else
-		printf("Matricula 2305 na posicao: %d\nNotas: %.1f, %.1f, %.1f, %.1f e MF: %.1f.\n\n", idx2, ha->itens[idx2]->a.n1, ha->itens[idx2]->a.n2, ha->itens[idx2]->a.n3, ha->itens[idx2]->a.n4, ha->itens[idx2]->a.media);
+		printf("Matrícula 2305 na posição %d.\nNotas: %.1f, %.1f, %.1f, %.1f e MF: %.1f\n\n", idx2, ha->itens[idx2]->a.n1, ha->itens[idx2]->a.n2, ha->itens[idx2]->a.n3, ha->itens[idx2]->a.n4, ha->itens[idx2]->a.media);
 	if(idx4 == -1)
-		printf("Matricula 2351 nao encontrada na tabela hash.\n\n");
+		printf("Matrícula 2351 não encontrada na tabela hash.\n\n");
 	else
-		printf("Matricula 2351 na posicao: %d\nNotas: %.1f, %.1f, %.1f, %.1f e MF: %.1f.\n\n", idx4, ha->itens[idx4]->a.n1, ha->itens[idx4]->a.n2, ha->itens[idx4]->a.n3, ha->itens[idx4]->a.n4, ha->itens[idx4]->a.media);
-	
+		printf("Matrícula 2351 na posição %d.\nNotas: %.1f, %.1f, %.1f, %.1f e MF: %.1f\n\n", idx4, ha->itens[idx4]->a.n1, ha->itens[idx4]->a.n2, ha->itens[idx4]->a.n3, ha->itens[idx4]->a.n4, ha->itens[idx4]->a.media);
 	destroiTabela(ha);
-	printf("Tabela destruida com sucesso\n");
 }
