@@ -2,8 +2,8 @@
 #include <stdlib.h>
 
 struct pessoa{
-	int id;
 	char nome[10];
+	int id;
 };
 
 typedef struct no{
@@ -11,12 +11,10 @@ typedef struct no{
 	struct no *prox;
 }No;
 
-
 typedef struct lista{
 	No *inicio;
 	int qtd;
 }Lista;
-
 
 struct hash{
 	int qtd, table_size;
@@ -30,57 +28,76 @@ Hash* criarTabela(int tam)
 	Hash *ha = (Hash*)malloc(sizeof(Hash));
 	if(ha != NULL)
 	{
-		ha->qtd = 0;
+		ha->qtd=0;
 		ha->table_size = tam;
 		ha->itens = (Lista**)malloc(tam * sizeof(Lista*));
 		int i;
 		for(i=0; i<tam; i++)
+		{
 			ha->itens[i] = NULL;
+		}
 	}
+	
 	return ha;
 }
 
-int funcaohashing(int chave, int tam)
+int funcaoHashing(int chave, int tam)
 {
 	return (chave & 0x7FFFFFFF) % tam;
-}
-
-int verificaColisao(int chave, Hash *ha)
-{
-	int indice = funcaohashing(chave, ha->table_size);
-	if(ha->itens[indice]->inicio == NULL)
-		return 0;
-	else
-		return 1;
 }
 
 int inserir(Hash *ha, struct pessoa p)
 {
 	if(ha == NULL)
 		return 0;
-	Lista *li = (Lista*)malloc(sizeof(Lista));
-	if(li == NULL)
+	int indice = funcaoHashing(p.id, ha->table_size);
+	No *no = (No*)malloc(sizeof(No));
+	if(no == NULL)
 		return 0;
-	li->inicio->p = p;
-	li->inicio->prox = NULL;
-	int index = funcaohashing(p.id, ha->table_size);
-	if(verificaColisao(p.id, ha->table_size))
+	no->p = p;
+	no->prox = NULL;
+	if(ha->itens[indice] == NULL)
 	{
-		No *aux = ha->itens[index]->inicio;
-		while(aux->prox != NULL)
-			aux = aux->prox;
-		aux->prox = li;
-		ha->itens->qtd+=1;
+		Lista *li = (Lista*)malloc(sizeof(Lista));
+		li->inicio = NULL;
+		li->qtd = 0;
+		ha->itens[indice] = li;
+		ha->itens[indice]->inicio = no;
+		ha->itens[indice]->qtd++;
 	}
 	else{
-		ha->itens[index]->inicio = li;
-		ha->itens->qtd+=1;
+		No *aux = ha->itens[indice]->inicio;
+		No *ax;
+		while(aux->prox != NULL)
+		{
+			ax = aux;
+			aux = aux->prox;
+		}
+		ax->prox = no;
+		ha->itens[indice]->qtd+=1;
 	}
-	
 	return 1;
 }
 
 int main()
 {
+	Hash *ha = criarTabela(7);
+	struct pessoa a = {"Michel", 20};
+	struct pessoa b = {"Michel", 20};
+	struct pessoa c = {"Michel", 20};
+	struct pessoa d = {"Michel", 20};
 	
+	struct pessoa e = {"Israel", 33};
+	struct pessoa f = {"Israel", 33};
+	struct pessoa g = {"Israel", 33};
+	struct pessoa h = {"Israel", 33};
+	printf(inserir(ha, a) ? "OK\n" : "nao ok");
+	printf(inserir(ha, b) ? "OK\n" : "nao ok");
+	printf(inserir(ha, c) ? "OK\n" : "nao ok");
+	printf(inserir(ha, d) ? "OK\n\n" : "nao ok");
+	
+	printf(inserir(ha, e) ? "OK\n" : "nao ok");
+	printf(inserir(ha, f) ? "OK\n" : "nao ok");
+	printf(inserir(ha, g) ? "OK\n" : "nao ok");
+	printf(inserir(ha, h) ? "OK\n" : "nao ok");
 }
