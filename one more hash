@@ -1,0 +1,449 @@
+/*#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#define NOME 30
+
+struct aluno{ //Estrutura aluno
+	char nome[NOME];
+	int matricula;
+	float n1,n2,n3,n4;
+	float media;
+};
+
+typedef struct no{ //Declaração do tipo nó para a estrutura aluno
+	struct aluno a;
+	struct no *prox;
+}No;
+
+struct hash{ //TAD da tabela com o campo qtd, TAM_TABELA e **itens
+	int qtd; //Quantidade de elementos da tabela
+	int TAM_TABELA; //Capacidade máxima de elementos da tabela
+	No **itens; //Ponteiro de ponteiros do tipo nó, será usado para guardar cada elemento da tabela
+};
+
+typedef struct hash Hash;
+
+//A função tabela aloca memória para uma estrutura do tipo Hash
+//realiza as devidas inicializações, quantidade sendo 0 e TAM_TABELA sendo o inteiro passado por parâmetro
+Hash* criarTabela(int tamanho_tabela)
+{
+	Hash *ha = (Hash*)malloc(sizeof(Hash));
+	if(ha != NULL)
+	{
+		int i;
+		ha->qtd = 0;
+		ha->TAM_TABELA = tamanho_tabela;
+		ha->itens = (No**)malloc(tamanho_tabela * sizeof(No*)); //Aloca a memória para o campo itens e todos os ponteiros da tabela
+		for(i=0; i<tamanho_tabela; i++)
+		{
+			ha->itens[i] = NULL; //inicializa como NULL cada índice para representar a ausência de valor (criando uma tabela vazia)
+		}
+	}
+	
+	return ha;
+}
+//A função funcaoHashing() recebe como parâemtro um inteiro chave 
+//e um inteiro tamanho_tabela representando o dado que será usado
+//como cálculo para identificar a posição do tipo aluno na tabela
+//e a quantidade máxima de elementos da tabela respectivamente.
+int funcaoHashing(int chave, int tamanho_tabela)
+{
+	return (chave & 0x7FFFFFFF) % tamanho_tabela; //Compara o valor da chave bit-a-bit (operação bitwise E (AND)) para tirar o sinal do número em caso de número negativo
+}												//extrai o módulo da divisão da chave com o tamanho da tabela e retorna o resultado, que seria o índice do elemento com aquela chave na tabela
+
+int inserirSemColisao(struct aluno a, Hash *ha)
+{
+	if(ha == NULL)
+		return 0;
+	No *no = (No*)malloc(sizeof(No)); //Aloca memória para um novo nó na tabela
+	a.n1 = a.n2 = a.n3 = a.n4 = 0.0; //inicializa a estrutura aluno com as notas 0
+	if(no == NULL)
+		return 0;
+	no->a = a;
+	int indice = funcaoHashing(no->a.matricula, ha->TAM_TABELA); //chama a função funcaoHashing() para pegar o índice de inserção do novo aluno
+	ha->itens[indice] = no; //insere o nó alocado no índice retornado
+	ha->qtd+=1; //incrementa a quantidade de elementos
+	
+	return 1; //retorna 1
+}
+
+int buscaTabela(Hash *ha, int chave) //A função buscaTabela() chama realiza o cálculo do índice baseado na chave passada por parâmetro
+{
+	int idx = (chave & 0x7FFFFFFF) % ha->TAM_TABELA;
+	int aux = ha->itens[idx]->a.matricula; //Armazena a chave do elemento que está no índice
+	if(aux != chave) //Valida para saber se as chaves são iguais (no contexto a matrícula do aluno é a chave)
+		return -1; //Se for diferente retorna -1, ou seja, não encontrou o elemento
+	else
+		return idx; //Se for igual retorna o índice
+}
+
+void destroiTabela(Hash *ha) //A função destroiTabela() recebe o endereço de uma estrutura hash e desaloca todos os ponteiros dentro de **itens
+{
+	int i;
+	for(i=0; i < ha->TAM_TABELA; i++)
+	{
+		free(ha->itens[i]);
+	}
+	free(ha->itens); //libera a tabela itens
+	free(ha); //libera a estrutura hash
+}
+
+int main()
+{
+	Hash *ha = criarTabela(31);
+	struct aluno a1 = {"J.R.R Tolkien", 2300};
+	struct aluno a2 = {"Cormac McCarthy", 2301};
+	struct aluno a3 = {"Aldous Huxley", 2302};
+	struct aluno a4 = {"George R.R Martin", 2303};
+	struct aluno a5 = {"Mario de Andrade", 2304};
+	struct aluno a6 = {"Machado de Assis", 2305};
+	struct aluno a7 = {"Jane Austen", 2306};
+	struct aluno a8 = {"Clarisse Lispector", 2307};
+	struct aluno a9 = {"Margaret Hamilton", 2308};
+	struct aluno a10 = {"Serginho Groisman", 2309};
+	struct aluno a11 = {"Renato Russo", 2310};
+	struct aluno a12 = {"Tchaikovski", 2311};
+	struct aluno a13 = {"Dostoievski", 2312};
+	struct aluno a14 = {"Liev Tolstoi", 2313};
+	struct aluno a15 = {"Franz Kafka", 2314};
+	struct aluno a16 = {"Friedrich Nietzsche", 2315};
+	struct aluno a17 = {"Porquinho", 2316};
+	struct aluno a18 = {"Artyom", 2317};
+	struct aluno a19 = {"William Blazkowicz", 2318};
+	struct aluno a20 = {"Airton Senna", 2319};
+	struct aluno a21 = {"Taron Egerton", 2320};
+	struct aluno a22 = {"Jason Brody", 2321};
+	struct aluno a23 = {"Edward Kenway", 2322};
+	struct aluno a24 = {"Suzuya Juuzou", 2323};
+	struct aluno a25 = {"Naoki Urasawa", 2324};
+	
+	printf("Tabela hash CRIADA com 31 posições: %d ocupada(s) e %d livre(s).\n\n", ha->qtd, (ha->TAM_TABELA-ha->qtd));
+	printf("Inserindo 25 alunos na tabela hash...\n");
+	inserirSemColisao(a1, ha);
+	inserirSemColisao(a2, ha);
+	inserirSemColisao(a3, ha);
+	inserirSemColisao(a4, ha);
+	inserirSemColisao(a5, ha);
+	inserirSemColisao(a6, ha);
+	inserirSemColisao(a7, ha);
+	inserirSemColisao(a8, ha);
+	inserirSemColisao(a9, ha);
+	inserirSemColisao(a10, ha);
+	inserirSemColisao(a11, ha);
+	inserirSemColisao(a12, ha);
+	inserirSemColisao(a13, ha);
+	inserirSemColisao(a14, ha);
+	inserirSemColisao(a15, ha);
+	inserirSemColisao(a16, ha);
+	inserirSemColisao(a17, ha);
+	inserirSemColisao(a18, ha);
+	inserirSemColisao(a19, ha);
+	inserirSemColisao(a20, ha);
+	inserirSemColisao(a21, ha);
+	inserirSemColisao(a22, ha);
+	inserirSemColisao(a23, ha);
+	inserirSemColisao(a24, ha);
+	inserirSemColisao(a25, ha);
+	printf("Tabela hash com 31 posições: %d ocupada(s) e %d livre(s).\n\n", ha->qtd, (ha->TAM_TABELA-ha->qtd));
+	
+	printf("Atribuindo as notas e calculando a média...\n\n");
+	
+	int idx1, idx2, idx3, idx4;
+	idx1 = buscaTabela(ha, 2301);
+	idx3 = buscaTabela(ha, 2302);
+	idx2 = buscaTabela(ha, 2305);
+	idx4 = buscaTabela(ha, 2351);
+	
+	float nota1, nota2, nota3, nota4;
+	
+	ha->itens[idx2]->a.n1 = 6.0;
+	nota1 = ha->itens[idx2]->a.n1;
+	ha->itens[idx2]->a.n2 = 9.0;
+	nota2 = ha->itens[idx2]->a.n2;
+	ha->itens[idx2]->a.n3 = 5.0;
+	nota3 = ha->itens[idx2]->a.n3;
+	ha->itens[idx2]->a.n4 = 8.0;
+	nota4 = ha->itens[idx2]->a.n4;
+	ha->itens[idx2]->a.media = ((nota1+nota2+nota3+nota4)/4.0);
+	
+	ha->itens[idx1]->a.n1 = 9.0;
+	nota1 = ha->itens[idx1]->a.n1;
+	ha->itens[idx1]->a.n2 = 8.0;
+	nota2 = ha->itens[idx1]->a.n2;
+	ha->itens[idx1]->a.n3 = 9.5;
+	nota3 = ha->itens[idx1]->a.n3;
+	ha->itens[idx1]->a.n4 = 10.0;
+	nota4 = ha->itens[idx1]->a.n4;
+	ha->itens[idx1]->a.media = ((nota1+nota2+nota3+nota4)/4.0);
+	
+	printf("Consultando as notas...\n\n");
+	if(idx1 == -1)
+		printf("Matrícula 2301 não encontrada na tabela hash.\n\n");
+	else
+		printf("Matrícula 2301 na posição %d.\nNotas: %.1f, %.1f, %.1f, %.1f e MF: %.1f\n\n", idx1, ha->itens[idx1]->a.n1, ha->itens[idx1]->a.n2, ha->itens[idx1]->a.n3, ha->itens[idx1]->a.n4, ha->itens[idx1]->a.media);
+	if(idx3 == -1)
+		printf("Matrícula 2302 não encontrada na tabela hash.\n\n");
+	else
+		printf("Matrícula 2302 na posição %d.\nNotas: %.1f, %.1f, %.1f, %.1f e MF: %.1f\n\n", idx3, ha->itens[idx3]->a.n1, ha->itens[idx3]->a.n2, ha->itens[idx3]->a.n3, ha->itens[idx3]->a.n4, ha->itens[idx3]->a.media);
+	if(idx2 == -1)
+		printf("Matrícula 2305 não encontrada na tabela hash.\n\n");
+	else
+		printf("Matrícula 2305 na posição %d.\nNotas: %.1f, %.1f, %.1f, %.1f e MF: %.1f\n\n", idx2, ha->itens[idx2]->a.n1, ha->itens[idx2]->a.n2, ha->itens[idx2]->a.n3, ha->itens[idx2]->a.n4, ha->itens[idx2]->a.media);
+	if(idx4 == -1)
+		printf("Matrícula 2351 não encontrada na tabela hash.\n\n");
+	else
+		printf("Matrícula 2351 na posição %d.\nNotas: %.1f, %.1f, %.1f, %.1f e MF: %.1f\n\n", idx4, ha->itens[idx4]->a.n1, ha->itens[idx4]->a.n2, ha->itens[idx4]->a.n3, ha->itens[idx4]->a.n4, ha->itens[idx4]->a.media);
+	destroiTabela(ha);
+}*/
+
+//A versão acima não implementa o tratamento de colisões
+//A versão abaixo implementa o tratamento de colisoes
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#define NOME 30
+
+struct aluno{ //Estrutura aluno
+	char nome[NOME];
+	int matricula;
+	float n1,n2,n3,n4;
+	float media;
+};
+
+typedef struct no{ //Declaração do tipo nó para a estrutura aluno
+	struct aluno a;
+	struct no *prox;
+}No;
+
+typedef struct lista{
+	No *inicio;
+	int qtd;
+}Lista;
+
+struct hash{ //TAD da tabela com o campo qtd, TAM_TABELA e **itens
+	int qtd; //Quantidade de elementos da tabela
+	int TAM_TABELA; //Capacidade máxima de elementos da tabela
+	Lista **itens; //Ponteiro de ponteiros do tipo nó, será usado para guardar cada elemento da tabela
+};
+
+typedef struct hash Hash;
+
+//A função tabela aloca memória para uma estrutura do tipo Hash
+//realiza as devidas inicializações, quantidade sendo 0 e TAM_TABELA sendo o inteiro passado por parâmetro
+Hash* criarTabela(int tamanho_tabela)
+{
+	Hash *ha = (Hash*)malloc(sizeof(Hash));
+	if(ha != NULL)
+	{
+		int i;
+		ha->qtd = 0;
+		ha->TAM_TABELA = tamanho_tabela;
+		ha->itens = (Lista**)malloc(tamanho_tabela * sizeof(Lista*)); //Aloca a memória para o campo itens e todos os ponteiros da tabela
+		for(i=0; i<tamanho_tabela; i++)
+		{
+			ha->itens[i] = NULL; //inicializa como NULL cada índice para representar a ausência de valor (criando uma tabela vazia)
+		}
+	}
+	
+	return ha;
+}
+//A função funcaoHashing() recebe como parâemtro um inteiro chave 
+//e um inteiro tamanho_tabela representando o dado que será usado
+//como cálculo para identificar a posição do tipo aluno na tabela
+//e a quantidade máxima de elementos da tabela respectivamente.
+int funcaoHashing(int chave, int tamanho_tabela)
+{
+	return (chave & 0x7FFFFFFF) % tamanho_tabela; //Compara o valor da chave bit-a-bit (operação bitwise E (AND)) para tirar o sinal do número em caso de número negativo
+}												//extrai o módulo da divisão da chave com o tamanho da tabela e retorna o resultado, que seria o índice do elemento com aquela chave na tabela
+
+/*int inserirEnderAberto(struct aluno a, Hash *ha)
+{
+	if(ha == NULL)
+		return 0;
+	No *no = (No*)malloc(sizeof(No)); //Aloca memória para um novo nó na tabela
+	a.n1 = a.n2 = a.n3 = a.n4 = 0.0; //inicializa a estrutura aluno com as notas 0
+	if(no == NULL)
+		return 0;
+	no->a = a;
+	int indice = funcaoHashing(no->a.matricula, ha->TAM_TABELA); //chama a função funcaoHashing() para pegar o índice de inserção do novo aluno
+	ha->itens[indice] = no; //insere o nó alocado no índice retornado
+	ha->qtd+=1; //incrementa a quantidade de elementos
+	
+	return 1; //retorna 1
+}*/
+
+int inserirSemColisao(struct aluno a, Hash *ha)
+{
+	if(ha == NULL)
+		return 0;
+	int indice = funcaoHashing(a.matricula, ha->TAM_TABELA);
+	No *no = (No*)malloc(sizeof(No));
+	if(no == NULL)
+		return 0;
+	no->a = a;
+	no->prox = NULL;
+	if(ha->itens[indice] == NULL)
+	{
+		Lista *li = (Lista*)malloc(sizeof(Lista));
+		li->inicio = NULL;
+		li->qtd = 0;
+		ha->itens[indice] = li;
+		ha->itens[indice]->inicio = no;
+		ha->itens[indice]->qtd++;
+	}
+	else{
+		No *aux = ha->itens[indice]->inicio;
+		No *ax;
+		while(aux->prox != NULL)
+		{
+			ax = aux;
+			aux = aux->prox;
+		}
+		ax->prox = no;
+		ha->itens[indice]->qtd+=1;
+	}
+	return 1;
+}
+
+No* buscaTabela(Hash *ha, int chave) //A função buscaTabela() chama realiza o cálculo do índice baseado na chave passada por parâmetro
+{
+	int index = (chave & 0x7FFFFFFF) % ha->TAM_TABELA;
+	No *aux = ha->itens[index]->inicio;
+	if(aux->a.matricula == chave)
+	{
+		return aux;
+	}
+	else{
+		while(aux->a.matricula != chave && aux->prox != NULL)
+			aux = aux->prox;
+		if(aux->a.matricula == chave)
+			return aux;
+		else
+			return NULL;
+	}
+	
+}
+
+void destroiTabela(Hash *ha) //A função destroiTabela() recebe o endereço de uma estrutura hash e desaloca todos os ponteiros dentro de **itens
+{
+	int i;
+	for(i=0; i < ha->TAM_TABELA; i++)
+	{
+		free(ha->itens[i]);
+	}
+	free(ha->itens); //libera a tabela itens
+	free(ha); //libera a estrutura hash
+}
+
+int main()
+{
+	Hash *ha = criarTabela(31);
+	struct aluno a1 = {"J.R.R Tolkien", 2300};
+	struct aluno at = {"J.R.R Tolkien", 2300};
+	struct aluno ay = {"J.R.R Tolkien", 2300};
+	struct aluno au = {"J.R.R Tolkien", 2300};
+	struct aluno a2 = {"Cormac McCarthy", 2301};
+	struct aluno a3 = {"Aldous Huxley", 2302};
+	struct aluno a4 = {"George R.R Martin", 2303};
+	struct aluno a5 = {"Mario de Andrade", 2304};
+	struct aluno a6 = {"Machado de Assis", 2305};
+	struct aluno a7 = {"Jane Austen", 2306};
+	struct aluno a8 = {"Clarisse Lispector", 2307};
+	struct aluno a9 = {"Margaret Hamilton", 2308};
+	struct aluno a10 = {"Serginho Groisman", 2309};
+	struct aluno a11 = {"Renato Russo", 2310};
+	struct aluno a12 = {"Tchaikovski", 2311};
+	struct aluno a13 = {"Dostoievski", 2312};
+	struct aluno a14 = {"Liev Tolstoi", 2313};
+	struct aluno a15 = {"Franz Kafka", 2314};
+	struct aluno a16 = {"Friedrich Nietzsche", 2315};
+	struct aluno a17 = {"Porquinho", 2316};
+	struct aluno a18 = {"Artyom", 2317};
+	struct aluno a19 = {"William Blazkowicz", 2318};
+	struct aluno a20 = {"Airton Senna", 2319};
+	struct aluno a21 = {"Taron Egerton", 2320};
+	struct aluno a22 = {"Jason Brody", 2321};
+	struct aluno a23 = {"Edward Kenway", 2322};
+	struct aluno a24 = {"Suzuya Juuzou", 2323};
+	struct aluno a25 = {"Naoki Urasawa", 2324};
+	
+	printf("Tabela hash CRIADA com 31 posições: %d ocupada(s) e %d livre(s).\n\n", ha->qtd, (ha->TAM_TABELA-ha->qtd));
+	printf("Inserindo 25 alunos na tabela hash...\n");
+	inserirSemColisao(a1, ha);
+	inserirSemColisao(a2, ha);
+	inserirSemColisao(a3, ha);
+	inserirSemColisao(a4, ha);
+	inserirSemColisao(a5, ha);
+	inserirSemColisao(a6, ha);
+	inserirSemColisao(a7, ha);
+	inserirSemColisao(a8, ha);
+	inserirSemColisao(a9, ha);
+	inserirSemColisao(a10, ha);
+	inserirSemColisao(a11, ha);
+	inserirSemColisao(a12, ha);
+	inserirSemColisao(a13, ha);
+	inserirSemColisao(a14, ha);
+	inserirSemColisao(a15, ha);
+	inserirSemColisao(a16, ha);
+	inserirSemColisao(a17, ha);
+	inserirSemColisao(a18, ha);
+	inserirSemColisao(a19, ha);
+	inserirSemColisao(a20, ha);
+	inserirSemColisao(a21, ha);
+	inserirSemColisao(a22, ha);
+	inserirSemColisao(a23, ha);
+	inserirSemColisao(a24, ha);
+	inserirSemColisao(a25, ha);
+	printf("Tabela hash com 31 posições: %d ocupada(s) e %d livre(s).\n\n", ha->qtd, (ha->TAM_TABELA-ha->qtd));
+	
+	printf("Atribuindo as notas e calculando a média...\n\n");
+	
+	No *idx1, *idx2, *idx3, *idx4;
+	idx1 = buscaTabela(ha, 2301);
+	idx3 = buscaTabela(ha, 2302);
+	idx2 = buscaTabela(ha, 2305);
+	idx4 = buscaTabela(ha, 2351);
+	
+	float nota1, nota2, nota3, nota4;
+	
+	idx2->a.n1 = 6.0;
+	nota1 = idx2->a.n1;
+	idx2->a.n2 = 9.0;
+	nota2 = idx2->a.n2;
+	idx2->a.n3 = 5.0;
+	nota3 = idx2->a.n3;
+	idx2->a.n4 = 8.0;
+	nota4 = idx2->a.n4;
+	idx2->a.media = (nota1+nota2+nota3+nota4)/4.0;
+	
+	idx1->a.n1 = 9.0;
+	nota1 = idx1->a.n1;
+	idx1->a.n2 = 8.0;
+	nota2 = idx1->a.n2;
+	idx1->a.n3 = 9.5;
+	nota3 = idx1->a.n3;
+	idx1->a.n4 = 10.0;
+	nota4 = idx1->a.n4;
+	idx1->a.media = (nota1+nota2+nota3+nota4)/4.0;
+	
+	printf("Consultando as notas...\n\n");
+	if(idx1 == NULL)
+		printf("Matrícula 2301 não encontrada na tabela hash.\n\n");
+	else
+		printf("Matrícula 2301 na posição \nNotas: %.1f, %.1f, %.1f, %.1f e MF: %.1f\n\n", idx1->a.n1, idx1->a.n2, idx1->a.n3, idx1->a.n4, idx1->a.media);
+	if(idx3 == NULL)
+		printf("Matrícula 2302 não encontrada na tabela hash.\n\n");
+	else
+		printf("Matrícula 2302 na posição %d.\nNotas: %.1f, %.1f, %.1f, %.1f e MF: %.1f\n\n", idx3->a.n1, idx3->a.n2, idx3->a.n3, idx3->a.n4, idx3->a.media);
+	if(idx2 == NULL)
+		printf("Matrícula 2305 não encontrada na tabela hash.\n\n");
+	else
+		printf("Matrícula 2305 na posição %d.\nNotas: %.1f, %.1f, %.1f, %.1f e MF: %.1f\n\n",idx2->a.n1, idx2->a.n2, idx2->a.n3, idx2->a.n4, idx2->a.media);
+	if(idx4 == NULL)
+		printf("Matrícula 2351 não encontrada na tabela hash.\n\n");
+	else
+		printf("Matrícula 2351 na posição %d.\nNotas: %.1f, %.1f, %.1f, %.1f e MF: %.1f\n\n", idx4->a.n1, idx4->a.n2, idx4->a.n3, idx4->a.n4, idx4->a.media);
+	destroiTabela(ha);
+}
