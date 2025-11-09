@@ -1,0 +1,116 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+struct grafo{
+	int **arestas;
+	float **pesos;
+	int nmr_vert;
+	int *grau;
+	int eh_ponderado;
+};
+
+typedef struct grafo Grafo;
+
+Grafo* criarGrafo(int numero_vertices)
+{
+	Grafo *gr = (Grafo*)malloc(sizeof(Grafo));
+	int i, j;
+	if(gr != NULL)
+	{
+		gr->nmr_vert = numero_vertices;
+		gr->arestas = (int**)malloc(numero_vertices * sizeof(int*));
+		gr->pesos = (float**)malloc(numero_vertices * sizeof(float*));
+		for(i=0; i<numero_vertices; i++)
+		{
+			gr->arestas[i] = (int*)malloc(sizeof(int) * numero_vertices);
+			gr->pesos[i] = (float*)malloc(sizeof(float) * numero_vertices);
+		}
+		gr->grau = (int*)malloc(sizeof(int)*numero_vertices);
+		for(i=0; i<numero_vertices; i++)
+		{
+			for(j=0; j<numero_vertices; j++)
+			{
+				gr->arestas[i][j] = 0;
+			}
+			gr->grau[i] = 0;
+		}
+		gr->eh_ponderado = 1;
+	}
+	return gr;
+}
+
+int inserirAresta(Grafo *gr, int origem, int destino, int eh_digrafo, float peso)
+{
+	if(gr == NULL)
+		return 0;
+	if(origem < 0 || origem >= gr->nmr_vert)
+		return 0;
+	if(destino < 0 || destino >= gr->nmr_vert)
+		return 0;
+	if(gr->grau[origem] == gr->nmr_vert || gr->grau[destino] == gr->nmr_vert)
+		return 0;
+	if(eh_digrafo)
+	{
+		gr->arestas[origem][destino] = 1;	
+		gr->grau[origem]+=1;
+		if(gr->eh_ponderado)
+		{
+			gr->pesos[origem][destino] = peso;
+		}
+	}
+	else{
+		gr->arestas[destino][origem] = gr->arestas[origem][destino] = 1;
+		gr->grau[origem]+=1;
+		gr->grau[destino]+=1;
+		if(gr->eh_ponderado)
+		{
+			gr->pesos[origem][destino] = peso;
+			gr->pesos[destino][origem] = peso;
+		}
+	}
+	return 1;
+}
+
+int removerAresta(Grafo *gr, int origem, int destino, int eh_digrafo)
+{
+	if(gr == NULL)
+		return 0;
+	if(origem < 0 || origem >= gr->nmr_vert)
+		return 0;
+	if(destino < 0 || destino >= gr->nmr_vert)
+		return 0;
+	if(gr->grau[origem] == 0 || gr->grau[destino] == 0)
+		return 0;
+	if(eh_digrafo)
+	{
+		gr->arestas[origem][destino] = 0;
+		gr->grau[origem]-=1;
+		if(gr->eh_ponderado)
+		{
+			gr->pesos[origem][destino] = 0;
+		}
+	}
+	else{
+		gr->arestas[origem][destino] = 0;
+		gr->arestas[destino][origem] = 0;
+		gr->grau[origem]-=1;
+		gr->grau[destino]-=1;
+		if(gr->eh_ponderado)
+		{
+			gr->pesos[origem][destino] = 0;
+			gr->pesos[destino][origem] = 0;
+		}
+	}
+	return 1;
+}
+
+int main()
+{
+	Grafo *gr = criarGrafo(3);
+	inserirAresta(gr, 0, 1, 1, 7.5);
+	inserirAresta(gr, 0, 2, 0, 8.9);
+	int a = removerAresta(gr, 0, 1, 1);
+	printf("%d\n", a);
+	printf("Aresta 1 e 2: %d %d\n", gr->arestas[0][1], gr->arestas[1][0]);
+	printf("Aresta 1 e 3: %d %d\n", gr->arestas[0][2], gr->arestas[2][0]);
+}
