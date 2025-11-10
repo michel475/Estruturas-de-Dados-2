@@ -1,0 +1,107 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+struct grafo{
+	int **arestas;
+	float **pesos;
+	int GMax;
+	int eh_ponderado;
+	int num_vert;
+	int *grau;
+};
+
+typedef struct grafo Grafo;
+
+Grafo* criagrafo(int num_vert)
+{
+	Grafo *gr = (Grafo*)malloc(sizeof(Grafo));
+	if(gr != NULL)
+	{
+		gr->arestas = (int**)malloc(num_vert * sizeof(int*));
+		gr->pesos = (float**)malloc(num_vert * sizeof(float*));
+		gr->grau = (int*)calloc(num_vert, sizeof(int));
+		int i, j;
+		for(i=0; i<num_vert; i++)
+		{
+			gr->arestas[i] = (int*)malloc(num_vert * sizeof(int));
+			gr->pesos[i] = (float*)malloc(num_vert * sizeof(float));
+		}
+		for(i=0; i<num_vert; i++)
+		{
+			for(j=0; j<num_vert; j++)
+			{
+				gr->arestas[i][j] = 0;
+				gr->pesos[i][j] = 0;
+			}
+			gr->grau[i] = 0;
+		}
+		gr->GMax = num_vert;
+		gr->num_vert = num_vert;
+		gr->eh_ponderado = 1;
+	}
+	
+	return gr;
+}
+
+int inseriraresta(Grafo *gr, int origem, int destino, int eh_digrafo, float peso)
+{
+	if(gr == NULL)
+		return 0;
+	if(origem < 0 || origem >= gr->GMax)
+		return 0;
+	if(destino < 0 || destino >= gr->GMax)
+		return 0;
+	if(eh_digrafo)
+	{
+		gr->arestas[origem][destino];
+		if(gr->eh_ponderado)
+		{
+			gr->pesos[origem][destino] = peso;
+		}
+	}
+	else{
+		gr->arestas[origem][destino] = 1;
+		gr->arestas[destino][origem] = 1;
+		if(gr->eh_ponderado)
+		{
+			gr->pesos[origem][destino] = peso;
+			gr->pesos[destino][origem] = peso;
+		}
+	}
+	return 1;
+}
+
+int removeraresta(Grafo *gr, int origem, int destino, int eh_digrafo)
+{
+	if(gr == NULL)
+		return 0;
+	if(origem < 0 || origem >= gr->GMax)
+		return 0;
+	if(destino < 0 || destino >= gr->GMax)
+		return 0;
+	if(eh_digrafo)
+	{
+		gr->arestas[origem][destino] = 0;
+		if(gr->eh_ponderado)
+		{
+			gr->pesos[origem][destino] = 0;
+		}
+	}
+	else{
+		gr->arestas[origem][destino] = 0;
+		gr->arestas[destino][origem] = 0;
+		if(gr->eh_ponderado)
+		{
+			gr->pesos[origem][destino] = 0;
+			gr->pesos[destino][origem] = 0;
+		}
+	}
+	return 1;
+}
+
+int main()
+{
+	Grafo *gr = criagrafo(3);
+	inseriraresta(gr, 0, 1, 1, 5.5);
+	printf("%d %d\n", gr->arestas[0][1], gr->arestas[1][0]);
+}
