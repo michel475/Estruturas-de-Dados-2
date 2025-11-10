@@ -1,0 +1,175 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+struct aluno{
+	char nome[40];
+	int matricula;
+	int idade;
+};
+
+struct grafo{
+	int **arestas;
+	struct aluno *dados;
+	float **pesos;
+	int nmr_vert;
+	int *grau;
+	int eh_ponderado;
+};
+
+typedef struct grafo Grafo;
+
+Grafo* criarGrafo(int numero_vertices)
+{
+	Grafo *gr = (Grafo*)malloc(sizeof(Grafo));
+	int i, j;
+	if(gr != NULL)
+	{
+		gr->nmr_vert = numero_vertices;
+		gr->arestas = (int**)malloc(numero_vertices * sizeof(int*));
+		gr->pesos = (float**)malloc(numero_vertices * sizeof(float*));
+		for(i=0; i<numero_vertices; i++)
+		{
+			gr->arestas[i] = (int*)malloc(sizeof(int) * numero_vertices);
+			gr->pesos[i] = (float*)malloc(sizeof(float) * numero_vertices);
+		}
+		gr->grau = (int*)malloc(sizeof(int)*numero_vertices);
+		gr->dados = (struct aluno*)malloc(sizeof(struct aluno) * numero_vertices);
+		for(i=0; i<numero_vertices; i++)
+		{
+			for(j=0; j<numero_vertices; j++)
+			{
+				gr->arestas[i][j] = 0;
+			}
+			gr->grau[i] = 0;
+		}
+		gr->eh_ponderado = 1;
+	}
+	return gr;
+}
+
+int inserirAresta(Grafo *gr, int origem, int destino, int eh_digrafo, float peso)
+{
+	if(gr == NULL)
+		return 0;
+	if(origem < 0 || origem >= gr->nmr_vert)
+		return 0;
+	if(destino < 0 || destino >= gr->nmr_vert)
+		return 0;
+	if(gr->grau[origem] == gr->nmr_vert || gr->grau[destino] == gr->nmr_vert)
+		return 0;
+	if(eh_digrafo)
+	{
+		gr->arestas[origem][destino] = 1;	
+		gr->grau[origem]+=1;
+		if(gr->eh_ponderado)
+		{
+			gr->pesos[origem][destino] = peso;
+		}
+	}
+	else{
+		gr->arestas[destino][origem] = gr->arestas[origem][destino] = 1;
+		gr->grau[origem]+=1;
+		gr->grau[destino]+=1;
+		if(gr->eh_ponderado)
+		{
+			gr->pesos[origem][destino] = peso;
+			gr->pesos[destino][origem] = peso;
+		}
+	}
+	return 1;
+}
+
+int removerAresta(Grafo *gr, int origem, int destino, int eh_digrafo)
+{
+	if(gr == NULL)
+		return 0;
+	if(origem < 0 || origem >= gr->nmr_vert)
+		return 0;
+	if(destino < 0 || destino >= gr->nmr_vert)
+		return 0;
+	if(gr->grau[origem] == 0 || gr->grau[destino] == 0)
+		return 0;
+	if(eh_digrafo)
+	{
+		gr->arestas[origem][destino] = 0;
+		gr->grau[origem]-=1;
+		if(gr->eh_ponderado)
+		{
+			gr->pesos[origem][destino] = 0;
+		}
+	}
+	else{
+		gr->arestas[origem][destino] = 0;
+		gr->arestas[destino][origem] = 0;
+		gr->grau[origem]-=1;
+		gr->grau[destino]-=1;
+		if(gr->eh_ponderado)
+		{
+			gr->pesos[origem][destino] = 0;
+			gr->pesos[destino][origem] = 0;
+		}
+	}
+	return 1;
+}
+
+int verificaamigo(Grafo *gr, int origem, int destino)
+{
+	if(gr == NULL)
+		return 0;
+	if(gr->arestas[origem][destino] == 1)
+		return 1;
+	else
+		return 0;
+}
+
+int caminho(Grafo *gr, int origem, int destino, int visitados[], int j)
+{
+	if(gr == NULL)
+		return 0;
+	if(gr->arestas[origem][destino] == 1)
+		return 1;
+	else{
+		int i, k, flag;
+		for(i=0; i<gr->nmr_vert; i++)
+		{
+			flag=0;
+			if(gr->arestas[origem][i] == 1)
+			{
+				for(k=0; k<j && flag == 0; k++)
+					if(visitados[k] == i)
+						flag=1;
+				if(flag == 0)
+				{
+					visitados[j] = i;
+					j++;
+					int o = caminho(gr, i, destino, visitados, j);
+					if(o)
+						return 1;
+					else
+						j--;
+				}
+			}
+		}
+		return 0;
+	}
+}
+
+int main()
+{
+	Grafo *gr = criarGrafo(3);
+	struct aluno a = {"Michel", 125, 20};
+	struct aluno b = {"Aguiar", 130, 19};
+	struct aluno c = {"Cardoso", 187, 21};
+	gr->dados[0] = a;
+	gr->dados[1] = b;
+	gr->dados[2] = c;
+	inserirAresta(gr, 0, 1, 0, 5.8);
+	//inserirAresta(gr, 1, 2, 0, 9.9);
+	printf("%d %d\n", gr->arestas[0][1], gr->arestas[1][0]);
+	int visitados[3];
+	visitados[0] = 0;
+	if(verificaamigo(gr, 0, 2))
+		printf("%s eh amigo de %s\n", gr->dados[0].nome, gr->dados[1].nome);
+	else
+		printf("nao\n");
+}
