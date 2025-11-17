@@ -1,0 +1,167 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct grafo{
+	int **itens;
+	int Gmax;
+	int *grau;
+}Grafo;
+
+Grafo* cg(int vert)
+{
+	Grafo *g = (Grafo*)malloc(sizeof(Grafo));
+	if(g != NULL)
+	{
+		g->Gmax = vert;
+		g->grau = (int*)malloc(vert * sizeof(int));
+		g->itens = (int**)malloc(vert * sizeof(int*));
+		for(int i = 0 ; i < vert; i++)
+		{
+			g->itens[i] = (int*)malloc(sizeof(int));
+			g->grau[i] = 0;
+		}
+	}
+	return g;
+}
+
+/*int aresta(Grafo *g, int origem, int destino)
+{
+	if(g == NULL)
+		return 0;
+	if(origem < 0 || origem>=g->Gmax)
+		return 0;
+	if(destino < 0 || destino>=g->Gmax)
+		return 0;
+	No *aux = g->itens[origem];
+	while(aux->prox != NULL)
+	{
+		aux = aux->prox;
+	}
+	aux->prox = g->itens[destino];
+	g->grau[origem]+=1;
+	aux = g->itens[destino];
+	while(aux->prox != NULL)
+	{
+		aux = aux->prox;
+	}
+	aux->prox = g->itens[origem];
+	g->grau[destino]+=1;
+	return 1;
+}*/
+
+int arestadupla(Grafo *g, int origem, int destino, int eh_digrafo)
+{
+	if(g == NULL)
+		return 0;
+	if(origem < 0 || origem >= g->Gmax)
+		return 0;
+	if(destino < 0 || destino >= g->Gmax)
+		return 0;
+	if(eh_digrafo)
+	{
+		g->itens[origem][g->grau[origem]] = destino;
+	}
+	else{
+		g->itens[origem][g->grau[origem]] = destino;
+		g->itens[destino][g->grau[destino]] = origem;
+		g->grau[destino]+=1;
+	}
+	g->grau[origem]+=1;
+	return 1;
+}
+
+/*int verificaaresta(Grafo *g, int origem, int destino)
+{
+	if(g == NULL)
+		return 0;
+	if(origem < 0 || origem>=g->Gmax)
+		return 0;
+	if(destino < 0 || destino>=g->Gmax)
+		return 0;
+	if(g->grau[origem] > g->grau[destino])
+	{
+		No *aux = g->itens[destino];
+		while(aux != g->itens[origem] && aux!=NULL)
+			aux = aux->prox;
+		if(aux == g->itens[origem])
+			return 1;
+		else
+			return 0;
+	}
+	else{
+		No *aux = g->itens[origem];
+		while(aux != g->itens[destino] && aux!=NULL)
+			aux = aux->prox;
+		if(aux == g->itens[destino])
+			return 1;
+		else
+			return 0;
+	}
+}*/
+
+int verify(Grafo *g, int origem, int destino)
+{
+	if(g == NULL)
+		return 0;
+	if(origem < 0 || origem >= g->Gmax)
+		return 0;
+	if(destino < 0 || destino >= g->Gmax)
+		return 0;
+	int i;
+	for(i = 0; i < g->grau[origem]; i++)
+	{
+		if(g->itens[origem][i] == destino)
+			return 1;
+	}
+	if(i == g->grau[origem])
+		return 0;
+}
+
+int removeraresta(Grafo *g, int origem, int destino, int eh_digrafo)
+{
+	if(g == NULL)
+		return 0;
+	if(origem < 0 || origem >= g->Gmax)
+		return 0;
+	if(destino < 0 || destino >= g->Gmax)
+		return 0;
+	if(!eh_digrafo)
+	{
+		int k=0;
+		while(g->itens[origem][k] != destino && k != g->grau[origem])
+			k+=1;
+		if(k == g->Gmax)
+			return 0;
+		g->grau[origem]-=1;
+		g->itens[origem][k] = g->itens[origem][g->grau[origem]];
+		removeraresta(g, destino, origem, 1);
+	}
+	else{
+		int k=0;
+		while(g->itens[origem][k] != destino && k != g->grau[origem])
+			k+=1;
+		if(k == g->Gmax)
+			return 0;
+		g->grau[origem]-=1;
+		g->itens[origem][k] = g->itens[origem][g->grau[origem]];
+	}
+	return 1;
+}
+
+int main()
+{
+	Grafo *g = cg(5);
+	arestadupla(g, 0, 1, 1);
+	arestadupla(g, 0, 2, 0);
+	arestadupla(g, 0, 3, 1);
+	removeraresta(g, 0, 2, 0);
+	//aresta(g, 0, 2);
+	if(verify(g, 0, 3))
+		printf("existe\n");
+	else
+		printf("nao existe\n");
+	if(verify(g, 2, 0))
+		printf("existe\n");
+	else
+		printf("nao existe\n");
+}
