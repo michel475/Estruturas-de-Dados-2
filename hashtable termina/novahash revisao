@@ -1,0 +1,88 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct no{
+	int dado;
+	struct no *prox;
+}No;
+
+struct hash{
+	int qtd, table_size;
+	No **itens;
+};
+
+typedef struct hash Hash;
+
+Hash* cria(int table_size)
+{
+	Hash *ha = (Hash*)malloc(sizeof(Hash));
+	if(ha != NULL)
+	{
+		ha->qtd = 0;
+		ha->table_size = table_size;
+		ha->itens = (No**)malloc(table_size * sizeof(No*));
+		for(int i=0; i<table_size; i++)
+		{
+			ha->itens[i] = NULL;
+		}
+	}
+	
+	return ha;
+}
+
+int funcaoHashing(int dado, int table_size)
+{
+	return (dado & 0x7FFFFFFF) % table_size;
+}
+
+int insercao(int dado, Hash *ha)
+{
+	if(ha == NULL)
+		return 0;
+	int indice = funcaoHashing(dado, ha->table_size);
+	No *aux = (No*)malloc(sizeof(No));
+	if(aux == NULL)
+		return 0;
+	aux->dado = dado;
+	aux->prox = NULL;
+	if(ha->itens[indice] == NULL)
+	{
+		ha->itens[indice] = aux;
+	}
+	else{
+		aux->prox = ha->itens[indice];
+		ha->itens[indice] = aux;
+	}
+	
+	ha->qtd+=1;
+	return 1;
+}
+
+int buscar(int dado, Hash *ha)
+{
+	if(ha == NULL)
+		return 0;
+	int indice = funcaoHashing(dado, ha->table_size);
+	No *aux = ha->itens[indice];
+	if(aux->dado == dado)
+		return 1;
+	else{
+		while(aux->prox != NULL && aux->dado != dado)
+			aux = aux->prox;
+		if(aux->dado == dado)
+			return 1;
+		else
+			return 0;
+	}
+	return 0;
+}
+
+int main()
+{
+	Hash *ha = cria(7);
+	insercao(5, ha);
+	insercao(8, ha);
+	insercao(9, ha);
+	insercao(7, ha);
+	printf(buscar(2, ha) ? "ok existe\n" : "ok nao existe\n");
+}
