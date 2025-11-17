@@ -1,0 +1,91 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+struct grafo{
+	int **arestas;
+	float **pesos;
+	int Gmax;
+};
+
+typedef struct grafo Grafo;
+
+Grafo* criarg(int vert)
+{
+	Grafo *gr = (Grafo*)malloc(sizeof(Grafo));
+	if(gr != NULL)
+	{
+		gr->arestas = (int**)malloc(vert * sizeof(int*));
+		gr->pesos = (float**)malloc(vert * sizeof(float*));
+		gr->Gmax = vert;
+		int i, j;
+		for(i = 0; i<vert; i++)
+		{
+			gr->arestas[i] = (int*)malloc(vert * sizeof(int));
+			gr->pesos[i] = (float*)malloc(vert * sizeof(float));
+		}
+		for(i=0; i<vert; i++)
+			for(j=0; j<vert; j++)
+			{
+				gr->arestas[i][j]=0;
+				gr->pesos[i][j] = 0;
+			}
+	}
+	
+	return gr;
+}
+
+int inserirArsta(Grafo *gr, int origem, int destino, int eh_ponderado, float peso)
+{
+	if(gr == NULL)
+		return 0;
+	if(origem < 0 || origem>=gr->Gmax)
+		return 0;
+	if(destino < 0 || destino>=gr->Gmax)
+		return 0;
+	if(eh_ponderado)
+	{
+		gr->pesos[origem][destino] = peso;
+		gr->pesos[destino][origem] = peso;
+	}
+	gr->arestas[origem][destino] = 1;
+	gr->pesos[destino][origem] = 1;
+	return 1;
+}
+
+int verificaAresta(Grafo *gr, int origem, int destino)
+{
+	if(gr == NULL)
+		return 0;
+	if(origem < 0 || origem>=gr->Gmax)
+		return 0;
+	if(destino < 0 || destino>=gr->Gmax)
+		return 0;
+	return gr->arestas[origem][destino] == 1;
+}
+
+int removerArsta(Grafo *gr, int origem, int destino, int eh_ponderado)
+{
+	if(gr == NULL)
+		return 0;
+	if(origem < 0 || origem>=gr->Gmax)
+		return 0;
+	if(destino < 0 || destino>=gr->Gmax)
+		return 0;
+	if(eh_ponderado)
+	{
+		gr->pesos[origem][destino] = 0;
+		gr->pesos[destino][origem] = 0;
+	}
+	gr->arestas[origem][destino] = 0;
+	gr->pesos[destino][origem] = 0;
+	return 1;
+}
+
+int main()
+{
+	Grafo *gr = criarg(5);
+	inserirArsta(gr, 1, 3, 1, 5.6);
+	inserirArsta(gr, 1, 4, 1, 5.6);
+	removerArsta(gr, 1, 4, 1);
+	printf(verificaAresta(gr, 1, 4) ? "existe\n" : "nao existe\n");
+}
