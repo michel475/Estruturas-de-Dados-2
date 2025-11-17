@@ -1,0 +1,215 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct arv{
+	int dado;
+	int altura;
+	struct arv *esq;
+	struct arv *dir;
+} *Arv;
+
+int alturaNo(Arv A)
+{
+	return A->altura;
+}
+
+int fatorbalno(Arv A)
+{
+	return alturaNo(A->esq) - alturaNo(A->dir);
+}
+
+int maior(int x, int y)
+{
+	return x > y ? x : y;
+}
+
+void rotacaoLL(Arv *A)
+{
+	if(A == NULL)
+		return;
+	Arv B = (*A)->esq;
+	(*A)->esq = B->dir;
+	B->dir = *A;
+	(*A)->altura = maior(alturaNo((*A)->esq), alturaNo((*A)->dir))+1;
+	B->altura = maior(alturaNo(B->esq), alturaNo(B->dir))+1;
+}
+
+void rotacaoRR(Arv *A)
+{
+	if(A == NULL)
+		return;
+	Arv B = (*A)->dir;
+	(*A)->dir = B->esq;
+	B->esq = *A;
+	(*A)->altura = maior(alturaNo((*A)->esq), alturaNo((*A)->dir))+1;
+	B->altura = maior(alturaNo(B->esq), alturaNo(B->dir))+1;
+}
+
+void rotacaoLR(Arv *A)
+{
+	rotacaoRR(&(*A)->esq);
+	rotacaoLL(A);
+}
+
+void rotacaoRL(Arv *A)
+{
+	rotacaoLL(&(*A)->dir);
+	rotacaoRR(A);
+}
+
+int insere(int dado, Arv *A)
+{
+	if(A == NULL)
+		return 0;
+	if(*A == NULL)
+	{
+		Arv no = (Arv)malloc(sizeof(struct arv));
+		if(no == NULL)
+			return 0;
+		no->dado = dado;
+		no->altura = 0;
+		no->esq = no->dir = NULL;
+		*A = no;
+		return 1;
+	}
+	if(dado <= (*A)->dado)
+		return insere(dado, &(*A)->esq);
+	else
+		return insere(dado, &(*A)->dir);
+		
+	if(*A != NULL)
+	{
+		(*A)->altura = maior(alturaNo((*A)->esq), alturaNo((*A)->dir))+1;
+	}
+	if(fatorbalno(*A) > 1)
+	{
+		if(fatorbalno((*A)->esq) >= 0)
+			rotacaoLL(A);
+		else
+			rotacaoLR(A);
+	}
+	else{
+		if(fatorbalno(*A) < -1)
+		{
+			if(fatorbalno((*A)->dir) <= 0)
+				rotacaoRR(A);
+			else
+				rotacaoRL(A);
+		}
+	}
+}
+
+int removeMax(Arv *A)
+{
+	if(A == NULL)
+		return 0;
+	while((*A)->dir != NULL)
+		*A = (*A)->dir;
+	int aux = (*A)->dado;
+	Arv B = (*A)->esq;
+	free(*A);
+	*A = B;
+	return aux;
+}
+
+int remover(int dado, Arv *A)
+{
+	if(A == NULL)
+		return 0;
+	if(dado == (*A)->dado)
+	{
+		if((*A)->esq == NULL && (*A)->dir == NULL)
+		{
+			free(*A);
+			*A = NULL;
+		}
+		else{
+			if((*A)->esq == NULL && (*A)->dir != NULL)
+			{
+				Arv B = (*A)->dir;
+				free(*A);
+				*A = B;
+			}
+			else{
+				if((*A)->esq != NULL && (*A)->dir != NULL)
+				{
+					Arv B = (*A)->esq;
+					free(*A);
+					*A = B;
+				}
+				else{
+					if((*A)->esq != NULL && (*A)->dir != NULL)
+					{
+						int aux = removeMax(&(*A)->esq);
+						(*A)->dado = aux;
+					}
+				}
+			}
+		}
+		return 1;
+	}
+	else{
+		if(dado < (*A)->dado)
+			return remover(dado, &(*A)->esq);
+		else
+			return remover(dado, &(*A)->dir);
+	}
+	
+	if(*A != NULL)
+	{
+		(*A)->altura = maior(alturaNo((*A)->esq), alturaNo((*A)->dir))+1;
+	}
+	if(fatorbalno(*A) > 1)
+	{
+		if(fatorbalno((*A)->esq) >= 0)
+			rotacaoLL(A);
+		else
+			rotacaoLR(A);
+	}
+	else{
+		if(fatorbalno(*A) < -1)
+		{
+			if(fatorbalno((*A)->dir) <= 0)
+				rotacaoRR(A);
+			else
+				rotacaoRL(A);
+		}
+	}
+}
+
+int busca(int dado, Arv A)
+{
+	if(A == NULL)
+		return 0;
+	if(dado == A->dado)
+		return 1;
+	else{
+		if(dado < A->dado)
+			return busca(dado, A->esq);
+		else
+			return busca(dado, A->dir);
+	}
+}
+
+void emordem(Arv A)
+{
+	if(A == NULL)
+		return;
+	emordem(A->esq);
+	printf("%d ", A->dado);
+	emordem(A->dir);
+}
+
+int main()
+{
+	Arv R = NULL;
+	insere(6, &R);
+	insere(5, &R);
+	insere(18, &R);
+	insere(66, &R);
+	remover(5, &R);
+	insere(12, &R);
+	emordem(R);
+	
+	printf(busca(6, R) ? "achado\n" : "nao achado\n");
+}
