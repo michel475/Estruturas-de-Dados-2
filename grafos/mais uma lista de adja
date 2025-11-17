@@ -1,0 +1,87 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+struct grafo{
+	int **arestas;
+	float **pesos;
+	int GMax;
+	int eh_ponderado;
+	int *grau;
+	int nr_vert;
+};
+
+typedef struct grafo Grafo;
+
+Grafo* criaGrapho(int nr_vert, int ponderado)
+{
+	Grafo *gr = (Grafo*)malloc(sizeof(Grafo));
+	if(gr != NULL)
+	{
+		gr->arestas = (int**)malloc(nr_vert * sizeof(int*));
+		if(ponderado)
+		{
+			gr->pesos = (float**)malloc(nr_vert * sizeof(float*));
+		}
+		gr->GMax = nr_vert;
+		gr->nr_vert = nr_vert;
+		gr->grau = (int*)calloc(nr_vert, sizeof(int));
+		int i;
+		for(i=0; i<nr_vert; i++)
+		{
+			gr->arestas[i] = (int*)malloc(nr_vert * sizeof(int));
+			gr->pesos[i] = (float*)malloc(nr_vert * sizeof(float));
+			gr->grau[i] = 0;
+		}
+	}
+	
+	return gr;
+}
+
+int inserirAresta(Grafo *gr, int origem, int destino, int eh_direcionado, float peso)
+{
+	if(gr == NULL)
+		return 0;
+	if(origem < 0 || origem >= gr->GMax)
+		return 0;
+	if(destino < 0 || destino >= gr->GMax)
+		return 0;
+	if(eh_direcionado)
+	{
+		gr->arestas[origem][gr->grau[origem]] = destino;
+		gr->pesos[origem][gr->grau[origem]] = peso;
+		gr->grau[origem]+=1;
+	}
+	else{
+		gr->arestas[origem][gr->grau[origem]] = destino;
+		gr->arestas[destino][gr->grau[destino]] = origem;
+		gr->pesos[origem][gr->grau[origem]] = peso;
+		gr->pesos[destino][gr->grau[destino]] = peso;
+		gr->grau[origem]+=1;
+		gr->grau[destino]+=1;
+	}
+}
+
+int removerAresta(Grafo *gr, int origem, int destino, int eh_direcionado)
+{
+	if(gr == NULL)
+		return 0;
+	if(origem < 0 || origem >= gr->GMax)
+		return 0;
+	if(destino < 0 || destino >= gr->GMax)
+		return 0;
+	int i;
+	while(i < gr->grau[origem] && gr->arestas[origem][i] != destino)
+		i+=1;
+	if(i == gr->grau)
+		return 0; // Nao encontrado;
+	if(gr->arestas[origem][i] == destino)
+	{
+		gr->grau[origem]-=1;
+		gr->arestas[origem][i] = gr->arestas[origem][gr->grau[origem]];
+	}
+}
+
+int main()
+{
+	Grafo *gr = criaGrapho(3, 1);
+}
