@@ -1,0 +1,127 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct arv{
+	int dado;
+	int altura;
+	struct arv *esq;
+	struct arv *dir;
+} *Arv;
+
+
+int alturaNo(Arv A)
+{
+	return A->altura;
+}
+
+int maior(int x, int y)
+{
+	return x > y ? x : y;
+}
+
+int fatorBalNo(Arv A)
+{
+	return alturaNo(A->esq) - alturaNo(A->dir);
+}
+
+void rotacaoLL(Arv *A)
+{
+	if(A == NULL)
+		return;
+	Arv B = (*A)->esq;
+	(*A)->esq = B->dir;
+	B->dir = *A;
+	(*A)->altura = maior(alturaNo((*A)->esq), alturaNo((*A)->dir))+1;
+	B->altura = maior(alturaNo(B->esq), alturaNo(B->dir))+1;
+}
+
+void rotacaoRR(Arv *A)
+{
+	if(A == NULL)
+		return;
+	Arv B = (*A)->dir;
+	(*A)->dir = B->esq;
+	B->esq = *A;
+	(*A)->altura = maior(alturaNo((*A)->esq), alturaNo((*A)->dir))+1;
+	B->altura = maior(alturaNo(B->esq), alturaNo(B->dir))+1;
+}
+
+void rotacaoLR(Arv *A)
+{
+	rotacaoRR(&(*A)->esq);
+	rotacaoLL(A);
+}
+
+void rotacaoRL(Arv *A)
+{
+	rotacaoLL(&(*A)->dir);
+	rotacaoRR(A);
+}
+
+int insere(Arv *A, int dado)
+{
+	if(A == NULL)
+		return 0;
+	if(*A == NULL)
+	{
+		Arv no = (Arv)malloc(sizeof(struct arv));
+		if(no == NULL)
+			return 0;
+		no->dado = dado;
+		no->esq = no->dir = NULL;
+		*A = no;
+		return 1;
+	}
+	else{
+		if(dado <= (*A)->dado)
+			return insere(&(*A)->esq, dado);
+		else
+			return insere(&(*A)->dir, dado);
+	}
+	if(*A != NULL)
+	{
+		(*A)->altura = maior(alturaNo((*A)->esq), alturaNo((*A)->dir))+1;
+	}
+	
+	if(fatorBalNo(*A) > 1)
+	{
+		if(fatorBalNo((*A)->esq) >= 0)
+			rotacaoLL(A);
+		else
+			rotacaoLR(A);
+	}
+	else{
+		if(fatorBalNo(*A) < -1)
+		{
+			if(fatorBalNo((*A)->dir) <= 0)
+				rotacaoRR(A);
+			else
+				rotacaoRL(A);
+		}
+	}
+}
+
+void emordem(Arv A)
+{
+	if(A == NULL)
+		return;
+	emordem(A->esq);
+	printf("%d ", A->dado);
+	emordem(A->dir);
+}
+
+int main()
+{
+	Arv R = NULL;
+	insere(&R, 6);
+	insere(&R, 4);
+	insere(&R, 67);
+	insere(&R, 16);
+	insere(&R, -46);
+	insere(&R, -46);
+	insere(&R, -46);
+	insere(&R, -46);
+	insere(&R, -46);
+	insere(&R, -46);
+	emordem(R);
+}
