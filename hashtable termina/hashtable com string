@@ -1,0 +1,100 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#define TAM 10
+typedef struct no{
+	char dado[TAM];
+	struct no *prox;
+}No;
+
+struct hash{
+	int qtd, table_size;
+	No **itens;
+};
+
+typedef struct hash Hash;
+
+Hash* init(int table_size)
+{
+	Hash *ha = (Hash*)malloc(sizeof(Hash));
+	if(ha != NULL)
+	{
+		ha->qtd = 0;
+		ha->table_size = table_size;
+		ha->itens = (No**)malloc(table_size * sizeof(No*));
+		int i;
+		for(i=0; i<table_size; i++)
+		{
+			ha->itens[i] = NULL;
+ 		}
+	}
+	return ha;
+}
+
+int funcaoHashing(char chave[], int table_size)
+{
+	int soma;
+	for(int i=0; i<strlen(chave); i++)
+	{
+		soma = soma + (int)chave[i];
+	}
+	return ((soma + (int)chave[strlen(chave)/2]) & 0x7FFFFFFF) % table_size;
+}
+int insercao(char info[], Hash *ha)
+{
+	if(ha == NULL)
+		return 0;
+	No *no = (No*)malloc(sizeof(No));
+	if(no == NULL)
+		return 0;
+	strcpy(no->dado, info);
+	no->prox = NULL;
+	int indice = funcaoHashing(info, ha->table_size);
+	if(ha->itens[indice] == NULL)
+	{
+		ha->itens[indice] = no;
+	}
+	else{
+		No *aux = ha->itens[indice];
+		while(aux->prox != NULL)
+			aux = aux->prox;
+		aux->prox = no;
+	}
+	ha->qtd+=1;
+	return 1;
+}
+
+int busca(char info[], Hash *ha)
+{
+	if(ha == NULL)
+		return 0;
+	int indice = funcaoHashing(info, ha->table_size);
+	No *aux = ha->itens[indice];
+	if(aux != NULL && strcmp(aux->dado, info) == 0)
+		return 1;
+	else{
+		if(aux != NULL)
+		{
+			while(aux->prox != NULL && strcmp(info, aux->dado)!=0)
+				aux = aux->prox;
+			if(strcmp(aux->dado, info) == 0)
+				return 1;
+			else{
+				return 0;
+			}
+		}
+		else{
+			return 0;
+		}
+	}
+}
+
+int main()
+{
+	Hash *ha = init(5);
+	insercao("michel", ha);
+	insercao("aguiar", ha);
+	insercao("cardoso", ha);
+	insercao("doctoor", ha);
+	printf(busca("michel", ha) ? "yes\n" : "no\n");
+}
