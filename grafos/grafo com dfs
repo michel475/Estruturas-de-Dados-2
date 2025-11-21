@@ -1,0 +1,126 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#define ADJ int
+
+typedef struct no{
+	char nome[40];
+}No;
+
+struct grafo{
+	ADJ **adj;
+	No *vertexes;
+	int V;
+	int *grau;
+};
+
+typedef struct grafo *Grafo;
+
+Grafo initiaz(int v)
+{
+	Grafo g = (Grafo)malloc(sizeof(struct grafo));
+	if(g != NULL)
+	{
+		g->adj = (ADJ**)malloc(v * sizeof(ADJ*));
+		g->vertexes = (No*)malloc(v * sizeof(No));
+		g->V=v;
+		g->grau = (int*)calloc(v, sizeof(int));
+		for(int i = 0; i < v; i++)
+		{
+			g->adj[i] = (ADJ*)malloc(v * sizeof(ADJ));
+			g->grau[i] = 0;
+		}
+	}
+	
+	return g;
+}
+
+int grfo(Grafo g, int orig, int dest)
+{
+	if(g == NULL)
+		return 0;
+	if(orig < 0 || orig >= g->V)
+		return 0;
+	if(dest < 0 || dest >= g->V)
+		return 0;
+	int i=0;
+	g->adj[orig][g->grau[orig]] = dest;
+	g->adj[dest][g->grau[dest]] = orig;
+	g->grau[orig]+=1;
+	g->grau[dest]+=1;
+	return 1;
+}
+
+int caminho_dfs_grafo(Grafo g, int orig, int dest)
+{
+	if(g == NULL)
+		return 0;
+	if(orig < 0 || orig >= g->V)
+		return 0;
+	if(dest < 0 || dest >= g->V)
+		return 0;
+	int pilha[g->V], visitados[g->V], topo=0;
+	pilha[0] = orig;
+	for(int i=0; i<g->V; i++)
+		visitados[i] = 0;
+	topo++;
+	visitados[orig] = 1;
+	int flag = 0;
+	while(topo != 0 && flag == 0)
+	{
+		int visitado = pilha[topo-1];
+		topo--;
+		if(g->grau[visitado] != 0){
+			for(int i = 0; i<g->grau[visitado]; i++)
+			{
+				if(g->adj[visitado][i] == dest)
+					flag = 1;
+				else{
+					if(visitados[g->adj[visitado][i]] == 0)
+					{
+						pilha[topo] = g->adj[visitado][i];
+						topo++;
+						visitados[g->adj[visitado][i]] = 1;
+					}
+				}
+			}
+		}
+	}
+	if(flag == 0)
+		return 0;
+	else
+		return 1;
+}
+
+int grforemove(Grafo g, int orig, int dest)
+{
+	if(g == NULL)
+		return 0;
+	if(orig < 0 || orig >= g->V)
+		return 0;
+	if(dest < 0 || dest >= g->V)
+		return 0;
+	int i=0;
+	while(i<g->grau[orig] && g->adj[orig][i] != dest)
+		i++;
+	if(i == g->grau[orig])
+		return 0; // adjacencia nao existe
+	g->grau[orig]-=1;
+	g->adj[orig][i] = g->adj[orig][g->grau[orig]];
+	grforemove(g, dest, orig);
+	return 1;
+}
+
+int main()
+{
+	Grafo g = initiaz(9);
+	strcpy(g->vertexes[0].nome, "michel");
+	strcpy(g->vertexes[1].nome, "israel");
+	strcpy(g->vertexes[2].nome, "larissa");
+	strcpy(g->vertexes[3].nome, "rodrigo");
+	grfo(g, 0, 1);
+	grfo(g, 0, 2);
+	grfo(g, 0, 3);
+	//printf("%s\n", g->vertexes[g->adj[0][g->grau[0]-1]].nome);
+	printf(caminho_dfs_grafo(g, 0, 2) ? "existe\n" : "nao existe\n");
+}
