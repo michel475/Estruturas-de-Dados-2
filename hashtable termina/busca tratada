@@ -1,0 +1,88 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct no{
+	int dado;
+	struct no *prox;
+}No;
+
+struct hash{
+	int qtd, ts;
+	No **itens;
+};
+
+typedef struct hash Hash;
+
+Hash* hash(int ts)
+{
+	Hash *ha = (Hash*)malloc(sizeof(Hash));
+	if(ha != NULL)
+	{
+		ha->qtd = 0;
+		ha->ts = ts;
+		ha->itens = (No**)malloc(ts * sizeof(No*));
+		int i;
+		for(i=0; i<ts; i++)
+			ha->itens[i] = NULL;
+	}
+	
+	return ha;
+}
+
+int funcaohash(int chave, int ts)
+{
+	return (chave & 0x7FFFFFFF) % ts;
+}
+
+int inserir(int dado, Hash *ha)
+{
+	if(ha == NULL)
+		return 0;
+	No *novo = (No*)malloc(sizeof(No));
+	if(novo == NULL)
+		return 0;
+	novo->dado = dado;
+	novo->prox = NULL;
+	int indice = funcaohash(dado, ha->ts);
+	if(ha->itens[indice] == NULL)
+	{
+		ha->itens[indice] = novo;
+	}
+	else{
+		novo->prox = ha->itens[indice];
+		ha->itens[indice] = novo;
+	}
+	ha->qtd+=1;
+	return 1;
+}
+
+int busca(int dado, Hash *ha)
+{
+	if(ha == NULL)
+		return 0;
+	int indice = funcaohash(dado, ha->ts);
+	No *aux = ha->itens[indice];
+	if(aux == NULL)
+		return 0;
+	else{
+		if(aux->dado == dado)
+			return 1;
+		else{
+			while(aux->prox != NULL && aux->dado != dado)
+				aux = aux->prox;
+			if(aux->dado == dado)
+				return 1;
+			else
+				return 0;
+		}
+	}
+}
+
+int main()
+{
+	Hash *ha = hash(7);
+	inserir(5, ha);
+	inserir(3, ha);
+	inserir(7, ha);
+	printf(busca(50, ha) ? "existe\n" : "nao existe\n");
+}
