@@ -1,1 +1,173 @@
+#include <stdio.h>
+#include <stdlib.h>
 
+typedef enum{VERMELHO, PRETO
+} Cor;
+
+typedef struct arvrb{
+	int dado;
+	Cor cor;
+	struct arvrb *pai;
+	struct arvrb *esq;
+	struct arvrb *dir;
+} *ArvRB;
+
+
+ArvRB avo(ArvRB n)
+{
+	if(n == NULL || n->pai == NULL)
+		return NULL;
+	return n->pai->pai;
+}
+
+ArvRB tio(ArvRB n)
+{
+	ArvRB vo = avo(n);
+	if(n == NULL || vo == NULL)
+		return NULL;
+	else{
+		return n->pai == vo->esq ? vo->dir : vo->esq;
+	}
+}
+
+void rotacaoesquerda(ArvRB *raiz, ArvRB x)
+{
+	ArvRB y = x->dir;
+	x->dir = y->esq;
+	if(y->esq != NULL)
+		y->esq->pai = x;
+	y->pai = x->pai;
+	if(x->pai == NULL)
+		*raiz = y;
+	else{
+		if(x == x->pai->esq)
+			x->pai->esq = y;
+		else
+			x->pai->dir = y;
+	}
+	y->esq = x;
+	x->pai = y;
+}
+
+void rotacaodireita(ArvRB *raiz, ArvRB x)
+{
+	ArvRB y = x->esq;
+	x->esq = y->dir;
+	if(y->dir != NULL)
+		y->dir->pai = x;
+	y->pai = x->pai;
+	if(x->pai == NULL)
+		*raiz = y;
+	else{
+		if(x == x->pai->esq)
+			x->pai->esq = y;
+		else
+			x->pai->dir = y;
+	}
+	y->dir = x;
+	x->pai = y;
+}
+
+void corrigirinsercao(ArvRB *raiz, ArvRB n)
+{
+	while(n != *raiz && n->pai->cor == VERMELHO)
+	{
+		ArvRB t = tio(n);
+		if(t != NULL && t->cor == PRETO)
+		{
+			t->cor = PRETO;
+			n->pai->cor = PRETO;
+			avo(n)->cor = VERMELHO;
+			n = avo(n);
+		}
+		else{
+			if(n->pai == avo(n)->esq)
+			{
+				if(n == n->pai->dir)
+				{
+					n = n->pai;
+					rotacaoesquerda(raiz, n);
+				}
+				n->pai->cor = PRETO;
+				avo(n)->cor = VERMELHO;
+				rotacaodireita(raiz, avo(n));
+			}
+			else{
+				if(n->pai == avo(n)->dir)
+				{
+					if(n == n->pai->esq)
+					{
+						n = n->pai;
+						rotacaodireita(raiz, n);
+					}
+					n->pai->cor = PRETO;
+					avo(n)->cor = VERMELHO;
+					rotacaoesquerda(raiz, avo(n));
+				}
+			}
+		}
+	}
+	(*raiz)->cor = PRETO;
+}
+
+ArvRB insercao(ArvRB *raiz, int dado)
+{
+	if(*raiz == NULL)
+	{
+		ArvRB novo = (ArvRB)malloc(sizeof(struct arvrb));
+		novo->dado = dado;
+		novo->cor = PRETO;
+		novo->esq = novo->dir = novo->pai = NULL;
+		*raiz = novo;
+		return *raiz;
+	}
+	else{
+		ArvRB aux = *raiz, pai;
+		while(aux != NULL)
+		{
+			pai = aux;
+			if(dado < aux->dado)
+				aux = aux->esq;
+			else{
+				if(dado > aux->dado)
+					aux = aux->dir;
+				else
+					return *raiz;
+			}
+		}
+		ArvRB novo = (ArvRB)malloc(sizeof(struct arvrb));
+		novo->dado = dado;
+		novo->cor = VERMELHO;
+		novo->esq = novo->dir = NULL;
+		novo->pai = pai;
+		if(novo->dado < pai->dado)
+			pai->esq = novo;
+		else
+			pai->dir = novo;
+		corrigirinsercao(raiz, novo);
+		return *raiz;
+	}
+}
+
+void emordem(ArvRB A)
+{
+	if(A == NULL)
+		return;
+	emordem(A->esq);
+	printf("%d %s\n", A->dado, A->cor == 0 ? "VERMELHO" : "PRETO");
+	emordem(A->dir);
+}
+
+
+int main()
+{
+	ArvRB R = NULL;
+	insercao(&R, 7);
+	insercao(&R, 9);
+	emordem(R);
+	printf("\n");
+	insercao(&R, 8);
+	insercao(&R, 5);
+	insercao(&R, 3);
+	emordem(R);
+}
