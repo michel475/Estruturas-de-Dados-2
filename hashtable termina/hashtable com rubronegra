@@ -1,0 +1,246 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef enum{VERMELHO, PRETO} Cor;
+
+typedef struct arvrb{
+	int dado;
+	Cor cor;
+	struct arvrb *pai;
+	struct arvrb *esq;
+	struct arvrb *dir;
+} *ArvRB;
+
+struct hash{
+	int qtd, ts;
+	ArvRB *itens;
+};
+
+typedef struct hash Hash;
+
+Hash* creatingHashTable(int table_size)
+{
+	Hash *ha = (Hash*)malloc(sizeof(Hash));
+	if(ha != NULL)
+	{
+		ha->itens = (ArvRB*)malloc(table_size * sizeof(ArvRB));
+		if(ha->itens == NULL)
+		{
+			free(ha->itens);
+			return NULL;
+		}
+		ha->qtd = 0;
+		ha->ts = table_size;
+		int i;
+		for(i=0; i<table_size; i++)
+		{
+			ha->itens[i] = NULL;
+		}
+	}
+	return ha;
+}
+
+ArvRB avo(ArvRB n)
+{
+	if(n == NULL || n->pai == NULL)
+		return NULL;
+	return n->pai->pai;
+}
+
+ArvRB tio(ArvRB n)
+{
+	ArvRB vo = avo(n);
+	if(n == NULL || vo == NULL)
+		return NULL;
+	return n->pai == vo->esq ? vo->dir : vo->esq;
+}
+
+void rotacaoesquerda(ArvRB *raiz, ArvRB x)
+{
+	ArvRB y = x->dir;
+	x->dir = y->esq;
+	if(y->esq != NULL)
+		y->esq->pai = x;
+	y->pai = x->pai;
+	if(x->pai == NULL)
+		*raiz = y;
+	else{
+		if(x == x->pai->esq)
+			x->pai->esq = y;
+		else
+			x->pai->dir = y;
+	}
+	y->esq = x;
+	x->pai = y;
+}
+
+void rotacaodireita(ArvRB *raiz, ArvRB x)
+{
+	ArvRB y = x->esq;
+	x->esq = y->dir;
+	if(y->dir != NULL)
+		y->dir->pai = x;
+	y->pai = x->pai;
+	if(x->pai == NULL)
+		*raiz = y;
+	else{
+		if(x == x->pai->esq)
+			x->pai->esq = y;
+		else
+			x->pai->dir = y;
+	}
+	y->dir = x;
+	x->pai = y;
+}
+
+void corrigirinsercao(ArvRB *raiz, ArvRB n)
+{
+	while(n != *raiz && n->pai->cor == VERMELHO)
+	{
+		ArvRB t = tio(n);
+		if(t != NULL && t->cor == VERMELHO)
+		{
+			t->cor = PRETO;
+			n->pai->cor = PRETO;
+			avo(n)->cor = VERMELHO;
+			n = avo(n);
+		}
+		else{
+			if(n->pai == avo(n)->esq)
+			{
+				if(n == n->pai->dir)
+				{
+					n = n->pai;
+					rotacaoesquerda(raiz, n);
+				}
+				n->pai->cor = PRETO;
+				avo(n)->cor = VERMELHO;
+				rotacaodireita(raiz, avo(n));
+			}
+			else{
+				if(n->pai == avo(n)->dir)
+				{
+					if(n == n->pai->esq)
+					{
+						n = n->pai;
+						rotacaodireita(raiz, n);
+					}
+					n->pai->cor = PRETO;
+					avo(n)->cor = VERMELHO;
+					rotacaoesquerda(raiz, avo(n));
+				}
+			}
+		}
+	}
+	(*raiz)->cor = PRETO;
+}
+
+ArvRB inserir(int dado, ArvRB *raiz)
+{
+	if((*raiz) == NULL)
+	{
+		ArvRB novo = (ArvRB)malloc(sizeof(struct arvrb));
+		if(novo == NULL)
+			return NULL;
+		novo->dado = dado;
+		novo->cor = PRETO;
+		novo->pai = novo->esq = novo->dir = NULL;
+		*raiz = novo;
+		return *raiz;
+	}
+	else{
+		ArvRB aux = *raiz, pai;
+		while(aux != NULL)
+		{
+			pai = aux;
+			if(dado <= aux->dado)
+				aux = aux->esq;
+			else{
+				if(dado > aux->dado)
+					aux = aux->dir;
+			}
+		}
+		ArvRB novo = (ArvRB)malloc(sizeof(struct arvrb));
+		if(novo == NULL)
+			return NULL;
+		novo->dado = dado;
+		novo->pai = pai;
+		novo->cor = VERMELHO;
+		novo->esq = novo->dir = NULL;
+		if(novo->dado <= pai->dado)
+			pai->esq = novo;
+		else
+			pai->dir = novo;
+		corrigirinsercao(raiz, novo);
+		return *raiz;
+	}
+}
+
+int funcaoHashing(int chave, int ts)
+{
+	return (chave & 0x7FFFFFFF) % ts;
+}
+
+int busca(int dado, ArvRB A)
+{
+	if(A == NULL)
+		return 0;
+	if(dado == A->dado)
+		return 1;
+	else{
+		if(dado < A->dado)
+			return busca(dado, A->esq);
+		else
+			return busca(dado, A->dir);
+	}
+}
+
+int insercao(int dado, Hash *ha)
+{
+	if(ha == NULL || ha->qtd == ha->ts)
+		return 0;
+	int indice = funcaoHashing(dado, ha->ts);
+	inserir(dado, &ha->itens[indice]);
+	ha->qtd+=1;
+	return 1;
+}
+
+int buscando(int dado, Hash *ha)
+{
+	if(ha == NULL)
+		return 0;
+	int indice = funcaoHashing(dado, ha->ts);
+	return busca(dado, ha->itens[indice]);
+}
+
+void emordem(ArvRB A)
+{
+	if(A == NULL)
+		return;
+	emordem(A->esq);
+	printf("%d %s\n", A->dado, A->cor == VERMELHO ? "VERMELHO" : "PRETO");
+	emordem(A->dir);
+}
+
+int main()
+{
+	Hash *ha = creatingHashTable(31);
+	insercao(4, ha);
+	insercao(4, ha);
+	insercao(4, ha);
+	insercao(4, ha);
+	insercao(4, ha);
+	insercao(4, ha);
+	insercao(4, ha);
+	insercao(4, ha);
+	/*if(buscando(8, ha))
+		printf("existe\n");
+	else
+		printf("nao\n");*/
+	int i;
+	for(i=0; i<ha->ts; i++)
+	{
+		emordem(ha->itens[i]);
+		printf("\n");
+	}
+}
