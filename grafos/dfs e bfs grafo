@@ -1,0 +1,59 @@
+int dfs_grafo(Grafo g, int orig, int dest)
+{
+	if(g == NULL)
+		return 0;
+	if(orig < 0 || orig >=g->V || dest < 0 || dest >= g->V)
+		return 0;
+	if(orig == dest)
+		return 1;
+	int pilha[g->V], topo=0, visitados[g->V], i;
+	for(i=0; i<g->V; i++)
+		visitados[i] = 0;
+	pilha[topo++] = orig;
+	while(topo > 0)
+	{
+		int visitado = pilha[--topo];
+		if(g->arestas[visitado][dest] == 1)
+			return 1;
+		for(i=0; i<g->V; i++)
+		{
+			if(g->arestas[visitado][i] == 1 && !visitados[i])
+			{
+				visitados[i] = 1;
+				pilha[topo++] = i;
+			}
+		}
+	}
+	return 0;
+}
+
+int bfs_grafo(Grafo g, int orig, int dest)
+{
+	if(g == NULL)
+		return 0;
+	if(orig < 0 || orig >= g->V || dest < 0 || dest >= g->V)
+		return 0;
+	if(orig == dest)
+		return 1;
+	int fila[g->V], inicio=0, fim=0, visitados[g->V], i;
+	for(i=0; i<g->V; i++)
+		visitados[i] = 0;
+	fila[fim++] = orig;
+	while(inicio != fim)
+	{
+		inicio = (inicio+1) % g->V;
+		int visitado = fila[inicio];
+		if(g->arestas[visitado][dest] == 1)
+			return 1;
+		for(i=0; i<g->V; i++)
+		{
+			if(g->arestas[visitado][i] == 1 && !visitados[i])
+			{
+				visitados[i] = 1;
+				fila[fim] = i;
+				fim = (fim+1) % g->V;
+			}
+		}
+	}
+	return 0;
+}
