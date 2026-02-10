@@ -1,0 +1,126 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+struct grafo{
+	int **adj;
+	int **pesos;
+	int *g;
+	int V;
+};
+
+struct art{
+	int u;
+	int v;
+	int peso;
+};
+
+typedef struct arv{
+	int dado;
+	struct arv *esq;
+	struct arv *dir;
+	struct arv *pai;
+} *Arv;
+
+typedef struct grafo *Grafo;
+
+Grafo init(int v)
+{
+	Grafo g = (Grafo)malloc(sizeof(struct grafo));
+	if(g != NULL)
+	{
+		g->adj = (int**)malloc(v * sizeof(int*));
+		g->pesos = (int**)malloc(v * sizeof(int*));
+		g->g = (int*)calloc(v, sizeof(int));
+		g->V = v;
+		int i;
+		for(i=0; i<g->V; i++)
+		{
+			g->adj[i] = (int*)malloc(v * sizeof(int));
+			g->pesos[i] = (int*)malloc(v * sizeof(int));
+			g->g[i] = 0;
+		}
+	}
+	
+	return g;
+}
+
+void dfs(Grafo g)
+{
+	if(g == NULL)
+		return;
+	int pilha[g->V], topo=0, visitados[g->V], i;
+	for(i=0; i<g->V; i++)
+	{
+		visitados[i] = 0;
+	}
+	
+	pilha[topo++] = 0;
+	visitados[0] = 1;
+	while(topo > 0)
+	{
+		int visitado = pilha[--topo];
+	}
+}
+
+void dsu(Grafo g)
+{
+	Arv *conjunto = (Arv*)malloc(g->V * sizeof(Arv));
+	int i;
+	for(i=0; i<g->V; i++)
+	{
+		Arv novo = (Arv)malloc(sizeof(struct arv));
+		novo->dado = i;
+		novo->dir = novo->esq = novo->pai = NULL;
+		conjunto[i] = novo;
+	}
+	//Listando todas as arestas
+	int pilha[g->V], topo=0, visitados[g->V], cont=0;
+	for(i=0; i<g->V; i++)
+	{
+		visitados[i] = 0;
+	}
+	
+	pilha[topo++] = 0;
+	visitados[0] = 1;
+	struct art a[g->V];
+	while(topo > 0)
+	{
+		int visitado = pilha[--topo];
+		for(i=0; i<g->g[visitado]; i++)
+		{
+			if(!visitados[g->adj[visitado][i]])
+			{
+				visitados[g->adj[visitado][i]] = 1;
+				a[cont++] = {g->pesos[visitado][i], visitado, i};
+				pilha[topo++] = g->adj[visitado][i];
+			}
+		}
+	}
+	for(i=0; i<g->V; i++)
+	{
+		printf("\npeso: %d\nvertice u: %d\nvertice v %d\n", a[i].peso, a[i].u, a[i].v);
+	}
+}
+
+void inserindo(Grafo g, int orig, int dest, int peso)
+{
+	g->adj[orig][g->g[orig]] = dest;
+	g->adj[dest][g->g[dest]] = orig;
+	
+	g->pesos[orig][g->g[orig]] = peso;
+	g->pesos[dest][g->g[dest]] = peso;
+	
+	g->g[orig]++;
+	g->g[dest]++;
+}
+
+int main()
+{
+	Grafo g = init(5);
+	inserindo(g, 0, 1, 1);
+	inserindo(g, 1, 2, 2);
+	inserindo(g, 1, 3, 3);
+	inserindo(g, 2, 0, 4);
+	inserindo(g, 3, 4, 5);
+	dsu(g);
+}
