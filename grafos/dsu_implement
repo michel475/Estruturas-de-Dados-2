@@ -8,11 +8,16 @@ struct grafo{
 	int V;
 };
 
-struct art{
+typedef struct edge{
 	int u;
 	int v;
 	int peso;
-};
+	struct edge *prox;
+}Edge;
+
+typedef struct lista{
+	Edge *inicio;
+}Lista;
 
 typedef struct arv{
 	int dado;
@@ -82,7 +87,9 @@ void dsu(Grafo g)
 	
 	pilha[topo++] = 0;
 	visitados[0] = 1;
-	struct art a[g->V];
+	Lista *li = (Lista*)malloc(sizeof(Lista));
+	li->inicio = NULL;
+	
 	while(topo > 0)
 	{
 		int visitado = pilha[--topo];
@@ -91,14 +98,27 @@ void dsu(Grafo g)
 			if(!visitados[g->adj[visitado][i]])
 			{
 				visitados[g->adj[visitado][i]] = 1;
-				a[cont++] = {g->pesos[visitado][i], visitado, i};
+				//a[cont++] = {g->pesos[visitado][i], visitado, i};
+				Edge *aresta = (Edge*)malloc(sizeof(Edge));
+				aresta->peso = g->pesos[visitado][i];
+				aresta->u = visitado;
+				aresta->v = i;
+				aresta->prox = NULL;
+				if(li->inicio == NULL)
+				{
+					li->inicio = aresta;
+				}
+				else{
+					aresta->prox = li->inicio;
+					li->inicio = aresta;
+				}
 				pilha[topo++] = g->adj[visitado][i];
 			}
 		}
 	}
-	for(i=0; i<g->V; i++)
+	for(Edge *b = li->inicio; b != NULL; b = b->prox)
 	{
-		printf("\npeso: %d\nvertice u: %d\nvertice v %d\n", a[i].peso, a[i].u, a[i].v);
+		printf("\npeso: %d\nvertice u: %d\nvertice v: %d\n", b->peso, b->u, b->v);
 	}
 }
 
@@ -122,5 +142,6 @@ int main()
 	inserindo(g, 1, 3, 3);
 	inserindo(g, 2, 0, 4);
 	inserindo(g, 3, 4, 5);
+	inserindo(g, 3, 0, 5);
 	dsu(g);
 }
