@@ -9,15 +9,10 @@ struct grafo{
 };
 
 typedef struct edge{
+	int peso;
 	int u;
 	int v;
-	int peso;
-	struct edge *prox;
 }Edge;
-
-typedef struct lista{
-	Edge *inicio;
-}Lista;
 
 typedef struct arv{
 	int dado;
@@ -67,6 +62,32 @@ void dfs(Grafo g)
 	}
 }
 
+int find(Arv vertex)
+{
+	Arv aux = vertex;
+	while(aux->pai != NULL)
+		aux = aux->pai;
+	return aux->dado;
+}
+
+void insereArv(Arv *raiz, Arv *node)
+{
+	Arv aux = *raiz, pai;
+	while(aux != NULL)
+	{
+		pai = aux;
+		if((*node)->dado <= aux->dado)
+			aux = aux->esq;
+		else
+			aux = aux->dir;
+	}
+	
+	if((*node)->dado <= pai->dado)
+		pai->esq = *node;
+	else
+		pai->dir = *node;
+}
+
 void dsu(Grafo g)
 {
 	Arv *conjunto = (Arv*)malloc(g->V * sizeof(Arv));
@@ -82,43 +103,54 @@ void dsu(Grafo g)
 	int pilha[g->V], topo=0, visitados[g->V], cont=0;
 	for(i=0; i<g->V; i++)
 	{
+		cont += g->g[i];
 		visitados[i] = 0;
 	}
 	
 	pilha[topo++] = 0;
+	Edge lista[cont];
 	visitados[0] = 1;
-	Lista *li = (Lista*)malloc(sizeof(Lista));
-	li->inicio = NULL;
-	
+	int k=0;
 	while(topo > 0)
 	{
 		int visitado = pilha[--topo];
 		for(i=0; i<g->g[visitado]; i++)
 		{
+			lista[k++] = {g->pesos[visitado][i],visitado,g->adj[visitado][i]};
 			if(!visitados[g->adj[visitado][i]])
 			{
 				visitados[g->adj[visitado][i]] = 1;
-				//a[cont++] = {g->pesos[visitado][i], visitado, i};
-				Edge *aresta = (Edge*)malloc(sizeof(Edge));
-				aresta->peso = g->pesos[visitado][i];
-				aresta->u = visitado;
-				aresta->v = i;
-				aresta->prox = NULL;
-				if(li->inicio == NULL)
-				{
-					li->inicio = aresta;
-				}
-				else{
-					aresta->prox = li->inicio;
-					li->inicio = aresta;
-				}
 				pilha[topo++] = g->adj[visitado][i];
 			}
 		}
 	}
-	for(Edge *b = li->inicio; b != NULL; b = b->prox)
+	for(i=0; i<cont; i++)
 	{
-		printf("\npeso: %d\nvertice u: %d\nvertice v: %d\n", b->peso, b->u, b->v);
+		for(int j=i+1; j<cont; j++)
+		{
+			if(lista[i].peso > lista[j].peso)
+			{
+				Edge aux = lista[i];
+				lista[i] = lista[j];
+				lista[j] = aux;
+			}
+		}
+	}
+	Edge aceitas[cont];
+	k=0;
+	for(i=0; i<cont; i++)
+	{
+		//printf("peso: %d Aresta u: %d Aresta v: %d\n", lista[i].peso, lista[i].u, lista[i].v);
+		if(find(conjunto[lista[i].u]) != find(conjunto[lista[i].v]))
+		{
+			insereArv(&conjunto[lista[i].u], &conjunto[lista[i].v]);
+			aceitas[k++] = lista[i];
+		}
+	}
+	
+	for(i=0; i<k; i++)
+	{
+		printf("peso: %d aresta u: %d aresta v: %d\n", aceitas[i].peso, aceitas[i].u, aceitas[i].v);
 	}
 }
 
