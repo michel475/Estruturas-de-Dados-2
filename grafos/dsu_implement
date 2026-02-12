@@ -14,13 +14,6 @@ typedef struct edge{
 	int v;
 }Edge;
 
-typedef struct arv{
-	int dado;
-	struct arv *esq;
-	struct arv *dir;
-	struct arv *pai;
-} *Arv;
-
 typedef struct grafo *Grafo;
 
 Grafo init(int v)
@@ -62,49 +55,27 @@ void dfs(Grafo g)
 	}
 }
 
-int find(Arv vertex)
+int find(int p[], int u)
 {
-	Arv aux = vertex;
-	while(aux->pai != NULL)
-		aux = aux->pai;
-	return aux->dado;
+    return p[u];
 }
 
-void insereArv(Arv *raiz, Arv *node)
+void uniao(int p[], int u, int v)
 {
-	Arv aux = *raiz, pai;
-	while(aux != NULL)
-	{
-		pai = aux;
-		if((*node)->dado <= aux->dado)
-			aux = aux->esq;
-		else
-			aux = aux->dir;
-	}
-	
-	if((*node)->dado <= pai->dado)
-		pai->esq = *node;
-	else
-		pai->dir = *node;
+    p[v] = u;
 }
 
 void dsu(Grafo g)
 {
-	Arv *conjunto = (Arv*)malloc(g->V * sizeof(Arv));
+	int parent[g->V];
 	int i;
-	for(i=0; i<g->V; i++)
-	{
-		Arv novo = (Arv)malloc(sizeof(struct arv));
-		novo->dado = i;
-		novo->dir = novo->esq = novo->pai = NULL;
-		conjunto[i] = novo;
-	}
 	//Listando todas as arestas
 	int pilha[g->V], topo=0, visitados[g->V], cont=0;
 	for(i=0; i<g->V; i++)
 	{
 		cont += g->g[i];
 		visitados[i] = 0;
+		parent[i] = i;
 	}
 	
 	pilha[topo++] = 0;
@@ -116,7 +87,10 @@ void dsu(Grafo g)
 		int visitado = pilha[--topo];
 		for(i=0; i<g->g[visitado]; i++)
 		{
-			lista[k++] = {g->pesos[visitado][i],visitado,g->adj[visitado][i]};
+			lista[k].peso = g->pesos[visitado][i];
+			lista[k].u = visitado;
+			lista[k].v = g->adj[visitado][i];
+			k++;
 			if(!visitados[g->adj[visitado][i]])
 			{
 				visitados[g->adj[visitado][i]] = 1;
@@ -140,12 +114,14 @@ void dsu(Grafo g)
 	k=0;
 	for(i=0; i<cont; i++)
 	{
-		//printf("peso: %d Aresta u: %d Aresta v: %d\n", lista[i].peso, lista[i].u, lista[i].v);
-		if(find(conjunto[lista[i].u]) != find(conjunto[lista[i].v]))
-		{
-			insereArv(&conjunto[lista[i].u], &conjunto[lista[i].v]);
-			aceitas[k++] = lista[i];
-		}
+	    if(find(parent, lista[i].u) != find(parent, lista[i].v))
+	    {
+	        uniao(&parent[0], lista[i].u, lista[i].v);
+	        aceitas[k].peso = lista[i].peso;
+	        aceitas[k].u = lista[i].u;
+	        aceitas[k].v = lista[i].v;
+	        k++;
+	    }
 	}
 	
 	for(i=0; i<k; i++)
@@ -174,6 +150,7 @@ int main()
 	inserindo(g, 1, 3, 3);
 	inserindo(g, 2, 0, 4);
 	inserindo(g, 3, 4, 5);
+	inserindo(g, 1, 3, 4);
 	inserindo(g, 3, 0, 5);
 	dsu(g);
 }
