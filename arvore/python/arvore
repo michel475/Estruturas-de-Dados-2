@@ -1,0 +1,23 @@
+class BSTNode (object):
+    def __init__ (self, key, value=None, left=None, right=None):
+        self.key = key
+        self.value = value
+        self.left = left
+        self.right = right
+
+def percursoInOrder(a):
+    if(a == None):
+        return
+    percursoInOrder(a.left)
+    print(a.value)
+    percursoInOrder(a.right)
+root = BSTNode(4)
+root.value = 4
+root.left = BSTNode(1)
+root.left.value = 1
+root.right = BSTNode(9)
+root.right.value = 9
+root.left.left = BSTNode(2)
+root.left.left.value = 2
+
+percursoInOrder(root)
